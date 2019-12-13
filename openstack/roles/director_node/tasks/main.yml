@@ -1,0 +1,3 @@
+---
+- include: 01-configure-repositories.yml
+- include: 02-install-packages.yml

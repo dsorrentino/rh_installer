@@ -1,0 +1,76 @@
+# These are Global Variables for the deployment
+osp_version: 13
+uc_user: stack
+uc_pass: stack
+tripleo_heat_templates: /usr/share/openstack-tripleo-heat-templates
+stack_templates: /home/stack/templates
+deploy_script: /home/stack/overcloud_deploy.sh
+overcloud_timezone: 'US/Eastern'
+# Undercloud/Director Configuration
+director_provisioning_nic: eth1
+director_provisioning_network: 192.168.10.15/24
+director_provisioning_gateway: 192.168.10.1
+director_provisioning_dhcp_start: 192.168.10.100
+director_provisioning_dhcp_end: 192.168.10.200
+director_provisioning_introspection_start: 192.168.10.20
+director_provisioning_introspection_end: 192.168.10.99
+director_provisioning_mtu: 8946
+director_local_ip: 192.168.10.15
+director_public_vip: 192.168.10.10
+director_admin_vip: 192.168.10.16
+generate_certificates: true
+enable_masquerading: true
+enable_uefi: false
+enable_debug: false
+enable_tempest: true
+enable_mistral: true
+enable_zaqar: true
+enable_telemetry: false
+enable_ui: false
+enable_validations: true
+enable_node_cleaning: true
+store_ceilometer_events: true
+container_registry: local # May be local, remote or satellite
+container_prefix: openstack
+container_namespace: registry.access.redhat.com/rhosp13
+# Overcloud Configuration
+nic_configs: bond-with-vlans
+nodes:
+    - { count_parameter: "ControllerCount", flavor_parameter: "OvercloudControllerFlavor", flavor: "control", count: 1, custom_role: "False" }
+    - { count_parameter: "ComputeCount", flavor_parameter: "OvercloudComputeFlavor", flavor: "compute", count: 1, custom_role: "False" }
+    - { count_parameter: "CephStorageCount", flavor_parameter: "OvercloudCephStorageFlavor", flavor: "ceph-storage", count: 0, custom_role: "False" }
+    - { count_parameter: "ComputeOsdCount", flavor_parameter: "OvercloudComputeOsdFlavor", flavor: "computeosd", count: 0, custom_role: "True", role_combine: "Compute,CephStorage" }
+# Overcloud Network Configuration
+networks:
+    - { network: "InternalApi", cidr: "192.168.30.0/24", vlan: "50", pool: "[{'start': '192.168.30.20', 'end': '192.168.30.200'}]", static_vip: "True", vip: 192.168.30.10, default_route: '' }
+    - { network: "Storage", cidr: "192.168.40.0/24", vlan: "52", pool: "[{'start': '192.168.40.20', 'end': '192.168.40.200'}]", static_vip: "True", vip: 192.168.40.10, default_route: '' }
+    - { network: "StorageMgmt", cidr: "192.168.50.0/24", vlan: "53", pool: "[{'start': '192.168.50.20', 'end': '192.168.50.200'}]", static_vip: "True", vip: 192.168.50.10, default_route: '' }
+    - { network: "Tenant", cidr: "192.168.70.0/24", vlan: "51", pool: "[{'start': '192.168.70.20', 'end': '192.168.70.200'}]", static_vip: "False", vip: '', default_route: '' }
+    - { network: "External", cidr: "192.168.20.0/24", vlan: "151", pool: "[{'start': '192.168.20.20', 'end': '192.168.20.100'}]", static_vip: "True", vip: 192.168.20.10, default_route: 192.168.20.1 }
+dns_servers: '["1.0.0.1"]'
+ntp_server: 192.168.10.15
+ssl_config: { enable_tls: "False", cloud_name: "osp13-overcloud.homelab.net", cloud_domain: "homelab.net" }
+# Overcloud Storage Configuration
+storage_config:
+    - { storage: 'cinder', iscsi: true, ceph: false, backup: 'ceph', nfs_share: '', nfs_options: '' } # Backup can be either 'ceph' or 'swift'
+    - { storage: 'nova-ephemeral', use_ceph: false,  nfs_share: '', nfs_options: '' }
+    - { storage: 'glance', backend: 'file', nfs_share: '', nfs_options: '' } # Backend may be swift, rbd (ceph) or file
+    - { storage: 'gnocchi', backend: 'file' } # Backend may be swift, rbd (ceph) or file
+ceph_deployment: none # director, external or none
+ceph_node_capability: node:ceph
+ceph_configure_root_disk: false
+ceph_root_disk: /dev/vda
+ceph_encrypt_osd: false
+ceph_mon_max_pg_per_osd: 3072
+ceph_journal_size: 5120
+ceph_osd_pool_default_size: 3
+ceph_osd_pool_default_min_size: 2
+ceph_osd_pool_default_pg_num: 128
+ceph_osd_pool_default_pgp_num: 128
+ceph_disks:
+    - { osd: '/dev/vdb', journal: '' } # Null journal indicates co-located
+# Overcloud Services Configuration
+deploy_ironic: True
+deploy_sahara: False
+enable_fernet: True
+deploy_octavia: True

@@ -1,0 +1,23 @@
+- name: Configure RHEL7 Openstack Repositories - Version {{ osp_version }}
+  rhsm_repository:
+    name: "{{ item }}"
+    state: enabled
+  with_items:
+    - rhel-ha-for-rhel-7-server-rpms
+    - rhel-7-server-openstack-{{ osp_version }}-rpms
+  when: osp_version <= 14 and ansible_facts['cmdline']['BOOT_IMAGE'] is search('vmlinuz-3')
+- name: Configure RHEL7 Ceph Repositories - Version {{ osp_version }}
+  rhsm_repository:
+    name: rhel-7-server-rhceph-3-tools-rpms
+    state: enabled
+  when: osp_version >= 13 and osp_version <= 14 and ansible_facts['cmdline']['BOOT_IMAGE'] is search('vmlinuz-3')
+- name: Configure RHEL8 Openstack Repositories - Version {{ osp_version }}
+  rhsm_repository:
+    name: "{{ item }}"
+    state: enabled
+  with_items:
+    - rhel-8-for-x86_64-highavailability-rpms
+    - ansible-2.8-for-rhel-8-x86_64-rpms
+    - openstack-{{ osp_version }}-for-rhel-8-x86_64-rpms
+    - fast-datapath-for-rhel-8-x86_64-rpms
+  when: osp_version >= 15 and ansible_facts['cmdline']['BOOT_IMAGE'] is search('vmlinuz-4')

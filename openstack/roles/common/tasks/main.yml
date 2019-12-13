@@ -1,0 +1,2 @@
+---
+- include: 01-subscription-register-configure.yml

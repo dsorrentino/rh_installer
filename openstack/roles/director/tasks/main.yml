@@ -1,2 +1,2 @@
 ---
-- include: 01-subscription-register-configure.yml
+- include: 01-configure-director.yml

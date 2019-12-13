@@ -1,4 +1,4 @@
-- name: Register Director
+- name: Register Node with RHN
   redhat_subscription:
     state: present
     username: "{{ rhn_user }}"
@@ -25,4 +25,7 @@
     - rhel-8-for-x86_64-baseos-rpms
     - rhel-8-for-x86_64-appstream-rpms
   when: ansible_facts['cmdline']['BOOT_IMAGE'] is search('vmlinuz-4')
-
+- name: Update all packages
+  yum:
+    name: '*'
+    state: latest

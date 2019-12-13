@@ -1,0 +1,27 @@
+- name: Update all packages
+  yum:
+    name: '*'
+    state: latest
+- name: Install Triple-O packages (OSP Version <= 14)
+  yum:
+    name: python-tripleoclient
+    state: latest
+  when: osp_version <= 14 and ansible_facts['cmdline']['BOOT_IMAGE'] is search('vmlinuz-3')
+- name: Install Triple-O packages (OSP Version >= 15)
+  yum:
+    name: python3-tripleoclient
+    state: latest
+  when: osp_version >= 15 and ansible_facts['cmdline']['BOOT_IMAGE'] is search('vmlinuz-4')
+- name: Install Ceph Ansible package (OSP Version >= 13)
+  yum:
+    name: ceph-ansible
+    state: latest
+  when: osp_version >= 13 
+- name: Install Director Images for the Overcloud
+  yum:
+    name: '{{ packages }}'
+    state: latest
+  vars:
+    packages:
+      - rhosp-director-images
+      - rhosp-director-images-ipa
