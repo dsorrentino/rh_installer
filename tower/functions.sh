@@ -259,3 +259,10 @@ function TEST {
 	local CRED_KEY=""
 	echo "${CRED_TYPE}-${CRED_NAME}-${CRED_USER}-${CRED_PASS}-${CRED_KEY}"
 }
+
+function JOB_STATUS {
+	local NAME=$1
+	local TYPE=$2
+	local JOB_STATUS=$(${AWX} unified_jobs list 2>>${STDERR} | jq '.results[] | "\(.type) \(.name) \(.status)"' 2>>${STDERR} | egrep "${NAME}" 2>>${STDERR} | egrep "${TYPE}" 2>>${STDERR} | sed "s/${NAME}//g;s/${TYPE}//g;s/ //g;s/\"//g" 2>>${STDERR})
+	echo ${JOB_STATUS}
+}

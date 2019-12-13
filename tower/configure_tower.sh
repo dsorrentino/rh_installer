@@ -55,6 +55,14 @@ then
 	exit 1
 fi
 
+LOG "stdout" "Ensuring the Project is synchronized before continuing."
+
+while [[ $(JOB_STATUS "${PROJ_NAME}" "project_update") == "running" ]]
+do
+	LOG "stdout" "Project is still updating."
+	sleep 10
+done
+
 TEMPLATE_COUNT=$(echo "${!TEMPLATE[@]}" | wc -w)
 KEY_COUNT=$(echo "${!TEMPLATE[@]}" | sed 's/[0-9],//g' | tr " " "\n" | sort -u | wc -l)
 TEMPLATE_COUNT=$(( ${TEMPLATE_COUNT} / ${KEY_COUNT} ))
