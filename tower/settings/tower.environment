@@ -22,7 +22,7 @@ export PROJ_TYPE="Git"
 export PROJ_URL="git@github.com:dsorrentino/rh_installer.git"
 # Inventories
 export INV_OPENSTACK_NAME="Openstack"
-export INV_OPENSTACK_VAR_FILE=/home/dsorrent/git/rh_installer/tower/settings/openstack.environment
+export INV_OPENSTACK_VAR_FILE=/home/dsorrent/git/rh_installer/tower/settings/inventories/openstack.environment
 # Hosts
 export HOST_DIRECTOR_NAME=172.16.220.20
 # Templates
@@ -31,6 +31,7 @@ TEMPLATE[1,Name]="Configure Director Node"
 TEMPLATE[1,Description]="Configure node repositories and perform yum update"
 TEMPLATE[1,Playbook]="openstack/configure_director_node.yml"
 TEMPLATE[1,Credential]="Director Credential"
+TEMPLATE[1,Variables]="{'rhn_user': 'None', 'rhn_password': 'None', 'rhn_pool': 'None'}"
 TEMPLATE[2,Name]="Configure Triple-O Director"
 TEMPLATE[2,Description]="Configure Triple-O to install director"
 TEMPLATE[2,Playbook]="openstack/configure_director.yml"

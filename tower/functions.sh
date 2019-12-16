@@ -219,7 +219,9 @@ function CREATE_TEMPLATE {
 	local CREDENTIAL=$5
 	local CRED_ID=""
 	local PLAYBOOK=$6
+	local VARIABLES=$7
 	local TEMPLATE_ID=""
+	local EXTRA_VARS_FILE=""
 	local RESULT=0
 	if [[ $(RESOURCE_EXISTS "Template" "${NAME}") == true ]]
 	then
@@ -236,14 +238,24 @@ function CREATE_TEMPLATE {
 			LOG "file" "Credential: ${CREDENTIAL} (${CRED_ID})"
 			RESULT=1
 		else
-			echo "${AWX} job_template create --name \"${NAME}\" --project \"${PROJ_ID}\" --playbook \"${PLAYBOOK}\" --description \"${DESCRIPTION}\" --inventory \"${INV_ID}\"" >>${STDOUT}
-			${AWX} job_template create --name "${NAME}" --project "${PROJ_ID}" --playbook "${PLAYBOOK}" --description "${DESCRIPTION}" --inventory "${INV_ID}" --extra_vars "{'rhn_user': '', 'rhn_password': '', 'rhn_pool': ''}" --ask_variables_on_launch "true" >>${STDOUT} 2>>${STDERR}
+			if [[ ! -z "$VARIABLES" ]]
+			then
+				EXTRA_VARS_FILE=$(mktemp --suffix=create_template.yml)
+				echo "${VARIABLES}" | sed "s/ None/ ''/g" >${EXTRA_VARS_FILE}
+				VARIABLES="--extra_vars @${EXTRA_VARS_FILE} --ask_variables_on_launch true"
+			fi
+			LOG "file" "${AWX} job_template create --name \"${NAME}\" --project \"${PROJ_ID}\" --playbook \"${PLAYBOOK}\" --description \"${DESCRIPTION}\" --inventory \"${INV_ID}\" ${VARIABLES}"
+			${AWX} job_template create --name "${NAME}" --project "${PROJ_ID}" --playbook "${PLAYBOOK}" --description "${DESCRIPTION}" --inventory "${INV_ID}" ${VARIABLES} >>${STDOUT} 2>>${STDERR}
 			RESULT=$?
 			if [[ ${RESULT} -eq 0 ]]
 			then
 				TEMPLATE_ID=$(GET_ID "Template" "${NAME}")
 				${AWX} job_templates associate --credential ${CRED_ID} ${TEMPLATE_ID} >>${STDOUT} 2>>${STDERR}
 				RESULT=$?
+			fi
+			if [[ -f ${EXTRA_VARS_FILE} ]]
+			then
+				rm ${EXTRA_VARS_FILE}
 			fi
 		fi
 	fi

@@ -63,19 +63,15 @@ do
 	sleep 10
 done
 
-TEMPLATE_COUNT=$(echo "${!TEMPLATE[@]}" | wc -w)
-KEY_COUNT=$(echo "${!TEMPLATE[@]}" | sed 's/[0-9],//g' | tr " " "\n" | sort -u | wc -l)
-TEMPLATE_COUNT=$(( ${TEMPLATE_COUNT} / ${KEY_COUNT} ))
-
-for NDX in $(seq 1 ${TEMPLATE_COUNT})
+for NDX in $(echo "${!TEMPLATE[@]}" | sed 's/,[a-zA-Z][a-zA-Z]*/ /g' |  xargs -n1 | sort -u)
 do
 	for SETTING in $(echo "${!TEMPLATE[@]}" | sed 's/[0-9],//g' | tr " " "\n" | sort -u)
 	do
 	        VARNAME="TEMPLATE_${SETTING}"
-	        eval ${VARNAME}="'${TEMPLATE[$NDX,$SETTING]}'"
+	        eval ${VARNAME}="'${TEMPLATE[$NDX,$SETTING]}'" 2>>${STDERR}
 	done
 	LOG "stdout" "Creating template: ${TEMPLATE_Name}"
-	RESULT=$(CREATE_TEMPLATE "${TEMPLATE_Name}" "${TEMPLATE_Description}" "${INV_OPENSTACK_NAME}" "${PROJ_NAME}" "${TEMPLATE_Credential}" "${TEMPLATE_Playbook}")
+	RESULT=$(CREATE_TEMPLATE "${TEMPLATE_Name}" "${TEMPLATE_Description}" "${INV_OPENSTACK_NAME}" "${PROJ_NAME}" "${TEMPLATE_Credential}" "${TEMPLATE_Playbook}" "${TEMPLATE_Variables}")
 	if [[ ${RESULT} -ne 0 ]]
 	then
 		LOG "stdout" "Failed to create template: ${TEMPLATE_CONFIGURE_DIRECTOR_NAME}"
