@@ -350,9 +350,3 @@
            cd /home/{{ uc_user }}/images
            for i in $(ls /usr/share/rhosp-director-images/overcloud-full-latest-{{ osp_version }}*.tar /usr/share/rhosp-director-images/ironic-python-agent-latest-{{ osp_version }}*.tar); do tar -xvf $i; done
     become: yes
-  - name: Deploy director
-    shell: |
-           cd /home/{{ uc_user }}/
-           openstack undercloud install
-    become: yes
-    become_user: stack
