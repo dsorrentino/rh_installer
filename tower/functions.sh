@@ -214,12 +214,13 @@ function CREATE_TEMPLATE {
 	local DESCRIPTION=$2
 	local INVENTORY=$3
 	local INV_ID=""
-	local PROJECT=$4
+	local LIMIT_HOST=$4
+	local PROJECT=$5
 	local PROJ_ID=""
-	local CREDENTIAL=$5
+	local CREDENTIAL=$6
 	local CRED_ID=""
-	local PLAYBOOK=$6
-	local VARIABLES=$7
+	local PLAYBOOK=$7
+	local VARIABLES=$8
 	local TEMPLATE_ID=""
 	local EXTRA_VARS_FILE=""
 	local RESULT=0
@@ -244,8 +245,12 @@ function CREATE_TEMPLATE {
 				echo "${VARIABLES}" | sed "s/ None/ ''/g" >${EXTRA_VARS_FILE}
 				VARIABLES="--extra_vars @${EXTRA_VARS_FILE} --ask_variables_on_launch true"
 			fi
+			if [[ ! -z "${LIMIT_HOST}" ]]
+			then
+				LIMIT_HOST="--limit ${LIMIT_HOST}"
+			fi
 			LOG "file" "${AWX} job_template create --name \"${NAME}\" --project \"${PROJ_ID}\" --playbook \"${PLAYBOOK}\" --description \"${DESCRIPTION}\" --inventory \"${INV_ID}\" ${VARIABLES}"
-			${AWX} job_template create --name "${NAME}" --project "${PROJ_ID}" --playbook "${PLAYBOOK}" --description "${DESCRIPTION}" --inventory "${INV_ID}" ${VARIABLES} >>${STDOUT} 2>>${STDERR}
+			${AWX} job_template create --name "${NAME}" --project "${PROJ_ID}" --playbook "${PLAYBOOK}" --description "${DESCRIPTION}" --inventory "${INV_ID}" ${LIMIT_HOST} ${VARIABLES} >>${STDOUT} 2>>${STDERR}
 			RESULT=$?
 			if [[ ${RESULT} -eq 0 ]]
 			then

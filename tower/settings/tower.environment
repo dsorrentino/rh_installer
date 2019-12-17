@@ -27,12 +27,17 @@ export INV_OPENSTACK_VAR_FILE=/home/dsorrent/git/rh_installer/tower/settings/inv
 export HOST_DIRECTOR_NAME=172.16.220.20
 # Templates
 declare -A TEMPLATE
-TEMPLATE[1,Name]="Configure Director Node"
-TEMPLATE[1,Description]="Configure node repositories and perform yum update"
-TEMPLATE[1,Playbook]="openstack/configure_director_node.yml"
+TEMPLATE[1,Name]="Register and Subscribe Director Node"
+TEMPLATE[1,Description]="Register node to RHN, configure node repositories and perform yum update"
+TEMPLATE[1,Playbook]="playbooks/openstack/reg_and_sub_director_node.yml"
 TEMPLATE[1,Credential]="Director Credential"
 TEMPLATE[1,Variables]="{'rhn_user': 'None', 'rhn_password': 'None', 'rhn_pool': 'None'}"
-TEMPLATE[2,Name]="Configure Triple-O Director"
-TEMPLATE[2,Description]="Configure Triple-O to install director"
-TEMPLATE[2,Playbook]="openstack/configure_director.yml"
+TEMPLATE[2,Name]="Configure Director and Install Undercloud"
+TEMPLATE[2,Description]="Configure undercloud.conf and install director"
+TEMPLATE[2,Playbook]="playbooks/openstack/configure_install_director.yml"
 TEMPLATE[2,Credential]="Director Credential"
+TEMPLATE[3,Name]="Configure Container Registry"
+TEMPLATE[3,Description]="Configure Container Repository"
+TEMPLATE[3,Playbook]="playbooks/openstack/configure_container_registry.yml"
+TEMPLATE[3,Credential]="Director Credential"
+TEMPLATE[3,Variables]="{'registry_type': 'local', 'ceph_image': 'rhceph-3-rhel7'}"

@@ -71,7 +71,7 @@ do
 	        eval ${VARNAME}="'${TEMPLATE[$NDX,$SETTING]}'" 2>>${STDERR}
 	done
 	LOG "stdout" "Creating template: ${TEMPLATE_Name}"
-	RESULT=$(CREATE_TEMPLATE "${TEMPLATE_Name}" "${TEMPLATE_Description}" "${INV_OPENSTACK_NAME}" "${PROJ_NAME}" "${TEMPLATE_Credential}" "${TEMPLATE_Playbook}" "${TEMPLATE_Variables}")
+	RESULT=$(CREATE_TEMPLATE "${TEMPLATE_Name}" "${TEMPLATE_Description}" "${INV_OPENSTACK_NAME}" "${HOST_DIRECTOR_NAME}" "${PROJ_NAME}" "${TEMPLATE_Credential}" "${TEMPLATE_Playbook}" "${TEMPLATE_Variables}")
 	if [[ ${RESULT} -ne 0 ]]
 	then
 		LOG "stdout" "Failed to create template: ${TEMPLATE_CONFIGURE_DIRECTOR_NAME}"

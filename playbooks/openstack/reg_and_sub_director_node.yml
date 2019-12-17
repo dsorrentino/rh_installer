@@ -3,5 +3,5 @@
   hosts: all
   become: yes
   roles:
-    - roles/common
-    - roles/director_node
+    - ../rhel_node/roles/rhn
+    - roles/director_repos_and_pkgs
