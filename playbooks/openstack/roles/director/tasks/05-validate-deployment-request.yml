@@ -1,4 +1,4 @@
 - name: Ensure the request is for a version of Red Hat Openstack this project supports
   fail:
-    msg: "This project currently only supports versions 10, 13-15."
+    msg: "This project currently only supports versions: {{ acceptable_versions }}"
   when: osp_version not in acceptable_versions
