@@ -14,7 +14,6 @@
   rhsm_repository:
     name: "{{ item }}"
     state: enabled
-  when: rhn_user not '' and rhn_password not '' and rhn_pool not ''
   with_items:
     - rhel-7-server-extras-rpms
     - rhel-7-server-rh-common-rpms

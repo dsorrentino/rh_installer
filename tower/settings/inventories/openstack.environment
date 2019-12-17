@@ -8,16 +8,16 @@ deploy_script: /home/stack/overcloud_deploy.sh
 overcloud_timezone: 'US/Eastern'
 # Undercloud/Director Configuration
 director_provisioning_nic: eth1
-director_provisioning_network: 192.168.10.15/24
-director_provisioning_gateway: 192.168.10.1
-director_provisioning_dhcp_start: 192.168.10.100
-director_provisioning_dhcp_end: 192.168.10.200
-director_provisioning_introspection_start: 192.168.10.20
-director_provisioning_introspection_end: 192.168.10.99
+director_provisioning_network: 192.168.200.15/24
+director_provisioning_gateway: 192.168.200.1
+director_provisioning_dhcp_start: 192.168.200.100
+director_provisioning_dhcp_end: 192.168.200.200
+director_provisioning_introspection_start: 192.168.200.20
+director_provisioning_introspection_end: 192.168.200.99
 director_provisioning_mtu: 8946
-director_local_ip: 192.168.10.15
-director_public_vip: 192.168.10.10
-director_admin_vip: 192.168.10.16
+director_local_ip: 192.168.200.15
+director_public_vip: 192.168.200.10
+director_admin_vip: 192.168.200.16
 generate_certificates: true
 enable_masquerading: true
 enable_uefi: false
@@ -42,13 +42,13 @@ nodes:
     - { count_parameter: "ComputeOsdCount", flavor_parameter: "OvercloudComputeOsdFlavor", flavor: "computeosd", count: 0, custom_role: "True", role_combine: "Compute,CephStorage" }
 # Overcloud Network Configuration
 networks:
-    - { network: "InternalApi", cidr: "192.168.30.0/24", vlan: "50", pool: "[{'start': '192.168.30.20', 'end': '192.168.30.200'}]", static_vip: "True", vip: 192.168.30.10, default_route: '' }
-    - { network: "Storage", cidr: "192.168.40.0/24", vlan: "52", pool: "[{'start': '192.168.40.20', 'end': '192.168.40.200'}]", static_vip: "True", vip: 192.168.40.10, default_route: '' }
-    - { network: "StorageMgmt", cidr: "192.168.50.0/24", vlan: "53", pool: "[{'start': '192.168.50.20', 'end': '192.168.50.200'}]", static_vip: "True", vip: 192.168.50.10, default_route: '' }
-    - { network: "Tenant", cidr: "192.168.70.0/24", vlan: "51", pool: "[{'start': '192.168.70.20', 'end': '192.168.70.200'}]", static_vip: "False", vip: '', default_route: '' }
-    - { network: "External", cidr: "192.168.20.0/24", vlan: "151", pool: "[{'start': '192.168.20.20', 'end': '192.168.20.100'}]", static_vip: "True", vip: 192.168.20.10, default_route: 192.168.20.1 }
-dns_servers: '["1.0.0.1"]'
-ntp_server: 192.168.10.15
+    - { network: "InternalApi", cidr: "192.168.130.0/24", vlan: "130", pool: "[{'start': '192.168.130.20', 'end': '192.168.130.200'}]", static_vip: "True", vip: 192.168.130.10, default_route: '' }
+    - { network: "Storage", cidr: "192.168.140.0/24", vlan: "140", pool: "[{'start': '192.168.140.20', 'end': '192.168.140.200'}]", static_vip: "True", vip: 192.168.140.10, default_route: '' }
+    - { network: "StorageMgmt", cidr: "192.168.150.0/24", vlan: "150", pool: "[{'start': '192.168.150.20', 'end': '192.168.150.200'}]", static_vip: "True", vip: 192.168.150.10, default_route: '' }
+    - { network: "Tenant", cidr: "192.168.170.0/24", vlan: "170", pool: "[{'start': '192.168.170.20', 'end': '192.168.170.200'}]", static_vip: "False", vip: '', default_route: '' }
+    - { network: "External", cidr: "192.168.120.0/24", vlan: "120", pool: "[{'start': '192.168.120.20', 'end': '192.168.120.100'}]", static_vip: "True", vip: 192.168.120.10, default_route: 192.168.120.1 }
+dns_servers: '["172.16.225.254"]'
+ntp_server: 192.168.200.15
 ssl_config: { enable_tls: "False", cloud_name: "osp13-overcloud.homelab.net", cloud_domain: "homelab.net" }
 # Overcloud Storage Configuration
 storage_config:

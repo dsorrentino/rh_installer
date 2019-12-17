@@ -25,7 +25,7 @@
       - images
       - templates
     become: yes
-  - name: Copy the undercloud.conf into the {{ uc_user }} home directory (OSP Version <= 13)
+  - name: Copy the undercloud.conf into the {{ uc_user }} home directory (OSP Version {{ osp_version }} <= 13)
     copy:
       remote_src: true
       src: /usr/share/instack-undercloud/undercloud.conf.sample
@@ -34,7 +34,7 @@
       group: "{{ uc_user }}"
     become: yes
     when: osp_version <= 13
-  - name: Copy the undercloud.conf into the {{ uc_user }} home directory (OSP Version >= 14)
+  - name: Copy the undercloud.conf into the {{ uc_user }} home directory (OSP Version {{ osp_version }} >= 14)
     copy:
       remote_src: true
       src: /usr/share/python-tripleoclient/undercloud.conf.sample
@@ -60,7 +60,7 @@
       regexp: "^#local_ip "
       line: "local_ip = {{ director_local_ip }}/{{ director_provisioning_network_prefix.stdout }}"
     become: yes
-  - name: Configure undercloud.conf - network_gateway (OSP Version <= 12)
+  - name: Configure undercloud.conf - network_gateway (OSP Version {{ osp_version }} <= 12)
     lineinfile:
       path: /home/{{ uc_user }}/undercloud.conf
       state: present
@@ -68,7 +68,7 @@
       line: "network_gateway = {{ director_local_ip }}"
     become: yes
     when: enable_masquerading and osp_version <= 12
-  - name: Configure undercloud.conf - gateway  (OSP Version >= 13)
+  - name: Configure undercloud.conf - gateway  (OSP Version {{ osp_version }} >= 13)
     lineinfile:
       path: /home/{{ uc_user }}/undercloud.conf
       state: present
@@ -76,7 +76,7 @@
       line: "gateway = {{ director_local_ip }}"
     become: yes
     when: enable_masquerading and osp_version >= 13
-  - name: Configure undercloud.conf - network_gateway (OSP Version <= 12)
+  - name: Configure undercloud.conf - network_gateway (OSP Version {{ osp_version }} <= 12)
     lineinfile:
       path: /home/{{ uc_user }}/undercloud.conf
       state: present
@@ -84,7 +84,7 @@
       line: "network_gateway = {{ director_provisioning_gateway }}"
     become: yes
     when: enable_masquerading == False and osp_version <= 12
-  - name: Configure undercloud.conf - network_gateway (OSP Version >= 13)
+  - name: Configure undercloud.conf - network_gateway (OSP Version {{ osp_version }} >= 13)
     lineinfile:
       path: /home/{{ uc_user }}/undercloud.conf
       state: present
@@ -92,7 +92,7 @@
       line: "gateway = {{ director_provisioning_gateway }}"
     become: yes
     when: enable_masquerading == False and osp_version >= 13
-  - name: Configure undercloud.conf - director_public_vip (OSP Version >= 11)
+  - name: Configure undercloud.conf - director_public_vip (OSP Version {{ osp_version }} >= 11)
     lineinfile:
       path: /home/{{ uc_user }}/undercloud.conf
       state: present
@@ -100,7 +100,7 @@
       line: "undercloud_public_host = {{ director_public_vip }}"
     become: yes
     when: osp_version >= 11
-  - name: Configure undercloud.conf - director_public_vip (OSP Version <= 10)
+  - name: Configure undercloud.conf - director_public_vip (OSP Version {{ osp_version }} <= 10)
     lineinfile:
       path: /home/{{ uc_user }}/undercloud.conf
       state: present
@@ -108,7 +108,7 @@
       line: "undercloud_public_vip = {{ director_public_vip }}"
     become: yes
     when: osp_version <= 10
-  - name: Configure undercloud.conf - director_admin_vip (OSP Version >= 11)
+  - name: Configure undercloud.conf - director_admin_vip (OSP Version {{ osp_version }} >= 11)
     lineinfile:
       path: /home/{{ uc_user }}/undercloud.conf
       state: present
@@ -116,7 +116,7 @@
       line: "undercloud_admin_host = {{ director_admin_vip }}"
     become: yes
     when: osp_version >= 11
-  - name: Configure undercloud.conf - director_admin_vip (OSP Version <= 10)
+  - name: Configure undercloud.conf - director_admin_vip (OSP Version {{ osp_version }} <= 10)
     lineinfile:
       path: /home/{{ uc_user }}/undercloud.conf
       state: present
@@ -154,7 +154,7 @@
       regexp: "^#local_mtu "
       line: "local_mtu = {{ director_provisioning_mtu }}"
     become: yes
-  - name: Configure undercloud.conf - network_cidr (OSP Version <= 12)
+  - name: Configure undercloud.conf - network_cidr (OSP Version {{ osp_version }} <= 12)
     lineinfile:
       path: /home/{{ uc_user }}/undercloud.conf
       state: present
@@ -162,7 +162,7 @@
       line: "network_cidr = {{ director_provisioning_network }}"
     become: yes
     when: osp_version <= 12
-  - name: Configure undercloud.conf - cidr (OSP Version >= 13)
+  - name: Configure undercloud.conf - cidr (OSP Version {{ osp_version }} >= 13)
     lineinfile:
       path: /home/{{ uc_user }}/undercloud.conf
       state: present
@@ -170,7 +170,7 @@
       line: "cidr = {{ director_provisioning_network }}"
     become: yes
     when: osp_version >= 13
-  - name: Configure undercloud.conf - masquerade_network (OSP Version <= 12)
+  - name: Configure undercloud.conf - masquerade_network (OSP Version {{ osp_version }} <= 12)
     lineinfile:
       path: /home/{{ uc_user }}/undercloud.conf
       state: present
@@ -178,7 +178,7 @@
       line: "masquerade_network = {{ director_provisioning_network }}"
     become: yes
     when: enable_masquerading and osp_version <= 12
-  - name: Configure undercloud.conf - masquerade_network (OSP Version >= 13)
+  - name: Configure undercloud.conf - masquerade_network (OSP Version {{ osp_version }} >= 13)
     lineinfile:
       path: /home/{{ uc_user }}/undercloud.conf
       state: present
@@ -229,7 +229,7 @@
       regexp: "^#enable_tempest "
       line: "enable_tempest = {{ enable_tempest }}"
     become: yes
-  - name: Configure undercloud.conf - enable_mistral (OSP Version <= 10)
+  - name: Configure undercloud.conf - enable_mistral (OSP Version {{ osp_version }} <= 10)
     lineinfile:
       path: /home/{{ uc_user }}/undercloud.conf
       state: present
@@ -237,7 +237,7 @@
       line: "enable_mistral = {{ enable_mistral }}"
     become: yes
     when: osp_version <= 10
-  - name: Configure undercloud.conf - enable_zaqar (OSP Version <= 10)
+  - name: Configure undercloud.conf - enable_zaqar (OSP Version {{ osp_version }} <= 10)
     lineinfile:
       path: /home/{{ uc_user }}/undercloud.conf
       state: present
@@ -266,7 +266,7 @@
       regexp: "^#enable_validations "
       line: "enable_validations = {{ enable_validations }}"
     become: yes
-  - name: Configure undercloud.conf - store_events (OSP Version <= 10)
+  - name: Configure undercloud.conf - store_events (OSP Version {{ osp_version }} <= 10)
     lineinfile:
       path: /home/{{ uc_user }}/undercloud.conf
       state: present
@@ -297,7 +297,7 @@
       option: undercloud_admin_password
       value: "{{ uc_pass }}"
     become: yes
-  - name: Configure undercloud.conf - clean_nodes (OSP Version >= 14)
+  - name: Configure undercloud.conf - clean_nodes (OSP Version {{ osp_version }} >= 14)
     lineinfile:
       path: /home/{{ uc_user }}/undercloud.conf
       state: present
@@ -305,7 +305,7 @@
       line: "clean_nodes = true"
     become: yes
     when: osp_version >= 14 and enable_node_cleaning
-  - name: Configure undercloud.conf - local_subnet (OSP Version >= 14)
+  - name: Configure undercloud.conf - local_subnet (OSP Version {{ osp_version }} >= 14)
     lineinfile:
       path: /home/{{ uc_user }}/undercloud.conf
       state: present
@@ -313,7 +313,7 @@
       line: "local_subnet = ctlplane-subnet"
     become: yes
     when: osp_version >= 14
-  - name: Configure undercloud.conf - subnets (OSP Version >= 14)
+  - name: Configure undercloud.conf - subnets (OSP Version {{ osp_version }} >= 14)
     lineinfile:
       path: /home/{{ uc_user }}/undercloud.conf
       state: present
@@ -321,7 +321,7 @@
       line: "subnets = ctlplane-subnet"
     become: yes
     when: osp_version >= 14
-  - name: Created undercloud hiera if needed (OSP Version >= 14)
+  - name: Created undercloud hiera if needed (OSP Version {{ osp_version }} >= 14)
     copy:
       content: |
         neutron::global_physnet_mtu: {{ director_provisioning_mtu }}
@@ -331,7 +331,7 @@
       dest: /home/{{ uc_user }}/templates/undercloud_hiera.yaml
     when: osp_version >= 14 and director_provisioning_mtu > 1500
     become: yes
-  - name: Configure undercloud.conf - undercloud_hiera (OSP Version >= 14)
+  - name: Configure undercloud.conf - undercloud_hiera (OSP Version {{ osp_version }} >= 14)
     ini_file:
       path: /home/{{ uc_user }}/undercloud.conf
       state: present
@@ -340,7 +340,7 @@
       value: /home/{{ uc_user }}/templates/undercloud_hiera.yaml
     become: yes
     when: osp_version >= 14 and director_provisioning_mtu  > 1500
-  - name: Configure undercloud.conf - container_images_file (OSP Version >= 14)
+  - name: Configure undercloud.conf - container_images_file (OSP Version {{ osp_version }} >= 14)
     shell: |
       crudini --set /home/{{ uc_user }}/undercloud.conf DEFAULT container_images_file /home/stack/templates/containers-prepare-parameter.yaml
     become: yes
