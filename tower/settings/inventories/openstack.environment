@@ -1,65 +1,160 @@
+################################################
+#
 # These are Global Variables for the deployment
+#
+################################################
+# This is the version of RHOSP to pass
 osp_version: 13
+# These are the undercloud/director linux credentials
 uc_user: stack
 uc_pass: stack
+# Whether there should be a root-password injected into the Overcloud image, and if so, what to set it to
+enable_oc_pass: True
+oc_pass: Redhat01
+# Location of the default Triple-O Heat Templates
 tripleo_heat_templates: /usr/share/openstack-tripleo-heat-templates
+# Location where the customized templates to be used for the deployment are placed
 stack_templates: /home/stack/templates
+# The script that gets created to perform the overcloud deployment
 deploy_script: /home/stack/overcloud_deploy.sh
+# The Timezone to be used in the deployment
 overcloud_timezone: 'US/Eastern'
+################################################
+#
 # Undercloud/Director Configuration
+#
+################################################
+#
+# This is the NIC interface to be used for the PXE network for the Overcloud
 director_provisioning_nic: eth1
+# This is the IP of the Director/Prefix of the network CIDR
 director_provisioning_network: 192.168.200.15/24
+# This is the gateway of the PXE Network. Set this to the Director
+# IP if there is no real gateway on that network
 director_provisioning_gateway: 192.168.200.1
+# This is the DHCP range of the PXE network that is statically assigned
+# to nodes when the overcloud is provisioned.
 director_provisioning_dhcp_start: 192.168.200.100
 director_provisioning_dhcp_end: 192.168.200.200
+# This is the DHCP range of the PXE network that is temporarily used during
+# introspection of the nodes
 director_provisioning_introspection_start: 192.168.200.20
 director_provisioning_introspection_end: 192.168.200.99
+# This is the MTU of the PXE network NIC identified above
 director_provisioning_mtu: 8946
+# This is the local IP network of the Director on the PXE Network
 director_local_ip: 192.168.200.15
+# This is the VIP address assigned to the public endpoints of the Director Openstack
 director_public_vip: 192.168.200.10
+# This is the VIP address assigned to the admin endpoints of the Director Openstack
 director_admin_vip: 192.168.200.16
+# This will cause the Director to generate self-signed certificates
 generate_certificates: true
+# If there is no gateway on the PCE network and you're using the Director as the
+# gateway, set this to true to masquerade traffic out of the Director for
+# external access
 enable_masquerading: true
+# Set this to true if your overcloud nodes utilize UEFI
 enable_uefi: false
+# Set this to true to have Director generare debug logs for all Openstack services
 enable_debug: false
+# Set this to true to deploy Tempest on Director
 enable_tempest: true
+# Set this to true to deploy Mistral on Director (ignored in later versions of RHOSP)
 enable_mistral: true
+# Set this to true to deploy Zaqar on Director (ignored in later versions of RHOSP)
 enable_zaqar: true
+# Set this to true to deploy Ceilometer on Director
 enable_telemetry: false
+# Set this to true to deploy the Director UI (Deprecated and removed in later versions of RHOSP)
 enable_ui: false
+# Set this to true to deploy the validations framework in Director
 enable_validations: true
+# Set this to true to enable node cleaning in Ironic on Director
 enable_node_cleaning: true
+# Set this to try if you want to persist ceilometer events to a database (to be consumed by CFME, perhaps)
 store_ceilometer_events: true
+# Configure the registry type to be used by the Overcloud, either create a registry on Director (local),
+# use the Red Hat Registry over the internet (remote) or utilize a Satellite Server as the
+# Container registry (satellite)
 container_registry: local # May be local, remote or satellite
 container_prefix: openstack
 container_namespace: registry.access.redhat.com/rhosp13
+################################################
+#
 # Overcloud Configuration
+#
+################################################
+#
+# Which type of default NIC configuration should be used. Options are:
+#   bond-with-vlans
+#   multiple-nics
+#   single-nic-linux-bridge-vlans
+#   single-nic-vlans
 nic_configs: bond-with-vlans
+# This is where the nodes in the Overcloud are defined. For the most part, you'll want to
+# change the count of each of the roles to match what you're deploying.
 nodes:
     - { count_parameter: "ControllerCount", flavor_parameter: "OvercloudControllerFlavor", flavor: "control", count: 1, custom_role: "False" }
     - { count_parameter: "ComputeCount", flavor_parameter: "OvercloudComputeFlavor", flavor: "compute", count: 1, custom_role: "False" }
     - { count_parameter: "CephStorageCount", flavor_parameter: "OvercloudCephStorageFlavor", flavor: "ceph-storage", count: 0, custom_role: "False" }
     - { count_parameter: "ComputeOsdCount", flavor_parameter: "OvercloudComputeOsdFlavor", flavor: "computeosd", count: 0, custom_role: "True", role_combine: "Compute,CephStorage" }
+################################################
+#
 # Overcloud Network Configuration
+#
+################################################
+#
+# The deployment is designed to deploy using network isolation. These are the definitions of
+# each of the networks to be used.  Currently this project does not support collapsing networks
+# into the control plane to reduce the number of networks.  You can, however, use this project to
+# create the default templates, modify them as needed and then deploy the Overcloud.
 networks:
     - { network: "InternalApi", cidr: "192.168.130.0/24", vlan: "130", pool: "[{'start': '192.168.130.20', 'end': '192.168.130.200'}]", static_vip: "True", vip: 192.168.130.10, default_route: '' }
     - { network: "Storage", cidr: "192.168.140.0/24", vlan: "140", pool: "[{'start': '192.168.140.20', 'end': '192.168.140.200'}]", static_vip: "True", vip: 192.168.140.10, default_route: '' }
     - { network: "StorageMgmt", cidr: "192.168.150.0/24", vlan: "150", pool: "[{'start': '192.168.150.20', 'end': '192.168.150.200'}]", static_vip: "True", vip: 192.168.150.10, default_route: '' }
     - { network: "Tenant", cidr: "192.168.170.0/24", vlan: "170", pool: "[{'start': '192.168.170.20', 'end': '192.168.170.200'}]", static_vip: "False", vip: '', default_route: '' }
     - { network: "External", cidr: "192.168.120.0/24", vlan: "120", pool: "[{'start': '192.168.120.20', 'end': '192.168.120.100'}]", static_vip: "True", vip: 192.168.120.10, default_route: 192.168.120.1 }
+# DNS Servers to be used in the Overcloud
 dns_servers: '["172.16.225.254"]'
+# NTP server to be used by the Overcloud.
 ntp_server: 192.168.200.15
+# Whether or not to deploy with TLS. This part is still a work in progress. Eventually this project
+# will have a boolean called "Create Self-Signed" or something and generate the overcloud SSL
+# certificates for you.  Right now, this just copies over the necessary templates for you to
+# inject the certificate into. It also sets the CloudName and CloudDomain Triple-O variables.
 ssl_config: { enable_tls: "False", cloud_name: "osp13-overcloud.homelab.net", cloud_domain: "homelab.net" }
+################################################
+#
 # Overcloud Storage Configuration
+#
+################################################
+#
+# This defines the Storage to be used for the Overcloud.
 storage_config:
     - { storage: 'cinder', iscsi: true, ceph: false, backup: 'ceph', nfs_share: '', nfs_options: '' } # Backup can be either 'ceph' or 'swift'
     - { storage: 'nova-ephemeral', use_ceph: false,  nfs_share: '', nfs_options: '' }
     - { storage: 'glance', backend: 'file', nfs_share: '', nfs_options: '' } # Backend may be swift, rbd (ceph) or file
     - { storage: 'gnocchi', backend: 'file' } # Backend may be swift, rbd (ceph) or file
+################################################
+#
+# Overcloud Ceph Configuration
+#
+################################################
+#
+# If the deployment is going to use Ceph, that will be configured here
+#
 ceph_deployment: none # director, external or none
+# The assumption is you will add a property to your baremetal nodes in Ironic
+# that identify the role of the node.  In the example below, it's assumed that there's
+# a property called "node" that is set to ceph*.  This is typically how you would
+# do predictable node placement using scheduler hints.  By providing this information
+# the playbook can configure the root_disk on the baremetal node in Ironic for you.
 ceph_node_capability: node:ceph
 ceph_configure_root_disk: false
 ceph_root_disk: /dev/vda
+# The next set of settings are all ceph-ansible settings. Please review the documentation
+# to get a better understanding of what to set these values to.
 ceph_encrypt_osd: false
 ceph_mon_max_pg_per_osd: 3072
 ceph_journal_size: 5120
@@ -69,7 +164,14 @@ ceph_osd_pool_default_pg_num: 128
 ceph_osd_pool_default_pgp_num: 128
 ceph_disks:
     - { osd: '/dev/vdb', journal: '' } # Null journal indicates co-located
+################################################
+#
 # Overcloud Services Configuration
+#
+################################################
+#
+# The following settings are all boolean values used to include or exclude
+# specific templates in the Overcloud Deployment
 deploy_ironic: True
 deploy_sahara: False
 enable_fernet: True

@@ -1,31 +1,31 @@
-# Logging
-export STDOUT=/var/tmp/$(basename $0).stdout
-export STDERR=/var/tmp/$(basename $0).stderr
+################################################
+#
+# This file is used to configure Tower for the RH Installer Project.
+# The script will use the values in this file to:
+#   Authenticate to Tower
+#   Create the following resource in Tower:
+#     Templates
+#     Credentials
+#     Projects
+#     Inventories
+#   Log all stdout & stderr of the script actions
+#
+################################################
 # Tower information
+#
+# These are the credentials the script will use to authenticate to Tower
+################################################
 export TOWER_USERNAME=admin
 export TOWER_PASSWORD=Redhat01
 export TOWER_URL=https://172.16.225.225
-# Organization to use
-export TOWER_ORG="Default"
-# Credentials
-export CRED_GITHUB_NAME="Github Credential"
-export CRED_GITHUB_KEY=/home/dsorrent/.ssh/id_rsa
-export CRED_GITHUB_TYPE="Source Control"
-export CRED_DIRECTOR_NAME="Director Credential"
-export CRED_DIRECTOR_USER=root
-export CRED_DIRECTOR_PASSWORD=Redhat01!
-export CRED_DIRECTOR_TYPE="Machine"
-# Project
-export PROJ_NAME="RH Installer"
-export PROJ_DESCRIPTION="Red Hat Installation"
-export PROJ_TYPE="Git"
-export PROJ_URL="git@github.com:dsorrentino/rh_installer.git"
-# Inventories
-export INV_OPENSTACK_NAME="Openstack"
-export INV_OPENSTACK_VAR_FILE=/home/dsorrent/git/rh_installer/tower/settings/inventories/openstack.environment
-# Hosts
-export HOST_DIRECTOR_NAME=172.16.220.20
+################################################
 # Templates
+#
+# These are the templates that are created.
+# You should not need to edit this section
+# at all.
+#
+################################################
 declare -A TEMPLATE
 TEMPLATE[1,Name]="Director Node"
 TEMPLATE[1,Description]="Register node to RHN, configure node repositories, configured undercloud.conf and perform yum update"
@@ -37,3 +37,50 @@ TEMPLATE[2,Description]="Configure Container Repository"
 TEMPLATE[2,Playbook]="playbooks/openstack/create_container_registry.yml"
 TEMPLATE[2,Credential]="Director Credential"
 TEMPLATE[2,Variables]="{'registry_type': 'local', 'ceph_image': 'rhceph-3-rhel7'}"
+################################################
+# Credentials
+#
+# The project is pulled from Github, so you'll
+# need to provide valid Github credentials here.
+# We suggest creating a SSH key for this purpose
+# and use that instead of a user/password.
+#
+# Additionally, credentials will be needed for
+# Tower to login to the VM/Node you'll be using
+# for Director.  These will need to be provided
+# as well. The script prefers the SSH Key over
+# the password if both are set.
+################################################
+export CRED_GITHUB_NAME="Github Credential"
+export CRED_GITHUB_KEY=/home/dsorrent/.ssh/id_rsa
+export CRED_GITHUB_TYPE="Source Control"
+export CRED_DIRECTOR_NAME="Director Credential"
+export CRED_DIRECTOR_USER=root
+export CRED_DIRECTOR_KEY=/home/dsorrent/.ssh/id_rsa
+export CRED_DIRECTOR_PASSWORD=Redhat01!
+export CRED_DIRECTOR_TYPE="Machine"
+################################################
+# Project
+################################################
+export PROJ_NAME="RH Installer"
+export PROJ_DESCRIPTION="Red Hat Installation"
+export PROJ_TYPE="Git"
+export PROJ_URL="git@github.com:dsorrentino/rh_installer.git"
+################################################
+# Inventories
+################################################
+export INV_OPENSTACK_NAME="Openstack"
+export INV_OPENSTACK_VAR_FILE=/home/dsorrent/git/rh_installer/tower/settings/inventories/openstack.environment
+################################################
+# Hosts
+################################################
+export HOST_DIRECTOR_NAME=172.16.220.20
+################################################
+# Organization to use
+################################################
+export TOWER_ORG="Default"
+################################################
+# Logging
+################################################
+export STDOUT=/var/tmp/$(basename $0).stdout
+export STDERR=/var/tmp/$(basename $0).stderr

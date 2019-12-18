@@ -25,3 +25,4 @@
     packages:
       - rhosp-director-images
       - rhosp-director-images-ipa
+      - libguestfs-tools

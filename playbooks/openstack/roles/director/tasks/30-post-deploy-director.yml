@@ -1,0 +1,65 @@
+- name: Clean up image files if they exist in ~{{ uc_user }}/images
+  file:
+    path: ~/images/{{ item }}
+    state: absent
+  with_items:
+    - ironic-python-agent.initramfs
+    - ironic-python-agent.kernel
+    - overcloud-full.initrd
+    - overcloud-full.qcow2
+    - overcloud-full.vmlinuz
+  become: yes
+  become_user: "{{ uc_user }}"
+- name: Clean up images in Glance if they exist (OSP Version {{ osp_version }} <= 15)
+  shell: source ~/stackrc; openstack image delete {{ item }} >/dev/null 2>&1
+  with_items:
+    - bm-deploy-ramdisk
+    - bm-deploy-kernel
+    - overcloud-full
+    - overcloud-full-initrd
+    - overcloud-full-vmlinuz
+  ignore_errors: True
+  become: yes
+  become_user: "{{ uc_user }}"
+  when: osp_version <= 15
+- name: Extract images
+  shell: |
+         cd ~/images
+         for i in $(ls /usr/share/rhosp-director-images/overcloud-full-latest-{{ osp_version }}*.tar /usr/share/rhosp-director-images/ironic-python-agent-latest-{{ osp_version }}*.tar)
+         do
+           tar -xvf $i
+         done
+  become: yes
+  become_user: "{{ uc_user }}"
+- name: Set root password on the Overcloud Images
+  shell: |
+         export LIBGUESTFS_BACKEND=direct
+         virt-customize -a ~/images/overcloud-full.qcow2 --root-password password:{{ oc_pass }}
+  become: yes
+  become_user: "{{ uc_user }}"
+  when: enable_oc_pass
+- name: Upload images
+  shell: source ~/stackrc; openstack overcloud image upload --image-path /home/stack/images/
+  become: yes
+  become_user: "{{ uc_user }}"
+- name: Get subnet ID
+  shell: source ~/stackrc; openstack subnet list -f value -c ID
+  register: neutron_subnet
+  become: yes
+  become_user: "{{ uc_user }}"
+- name: Get undercloud nameserver
+  shell: egrep ^nameserver /etc/resolv.conf | head -1 | awk '{print $NF}'
+  register: undercloud_nameserver
+  when: neutron_nameserver == "undercloud"
+  become: yes
+  become_user: "{{ uc_user }}"
+- name: Set neutron nameserver to same as undercloud nameserver
+  shell: source ~/stackrc; neutron subnet-update {{ neutron_subnet.stdout }} --dns-nameserver {{ undercloud_nameserver.stdout }}
+  when: neutron_nameserver == "undercloud"
+  become: yes
+  become_user: "{{ uc_user }}"
+- name: Set neutron nameserver to {{ neutron_nameserver }}
+  shell: source ~/stackrc; neutron subnet-update {{ neutron_subnet.stdout }} --dns-nameserver {{ neutron_nameserver }}
+  when: neutron_nameserver != "undercloud"
+  become: yes
+  become_user: "{{ uc_user }}"

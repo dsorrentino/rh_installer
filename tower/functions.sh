@@ -7,18 +7,24 @@ function CREATE_CREDENTIAL {
 	local TOWER_ORG=$1
 	local CRED_NAME=$2
 	local CRED_TYPE=$3
+	local AUTH_TYPE=$4
 	local CRED_USER=""
 	local CRED_PASSWORD=""
 	local CRED_KEY=""
 	local RESULT=0
 
-	case ${CRED_TYPE} in
-		"Machine")
-			CRED_USER=$4
+	case ${AUTH_TYPE} in
+		"Password")
 			CRED_PASSWORD=$5
 			;;
-		"Source Control")
-			CRED_KEY=$4
+		"Key")
+			CRED_KEY=$5
+			;;
+	esac
+
+	case ${CRED_TYPE} in
+		"Machine")
+			CRED_USER=$6
 			;;
 	esac
 
@@ -29,10 +35,18 @@ function CREATE_CREDENTIAL {
 		CRED_TYPE_NUM=$(GET_ID "Credential Type" "${CRED_TYPE}")
 		case ${CRED_TYPE} in
 			"Machine")
-				${AWX} -v credentials create --credential_type ${CRED_TYPE_NUM} \
-					--name "${CRED_NAME}" \
-					--organization "${TOWER_ORG}" \
-					--inputs "{'username': '${CRED_USER}', 'password': '${CRED_PASSWORD}'}" >>${STDOUT} 2>>${STDERR}
+				if [[ "${AUTH_TYPE}" == "Password" ]]
+				then
+					${AWX} -v credentials create --credential_type ${CRED_TYPE_NUM} \
+						--name "${CRED_NAME}" \
+						--organization "${TOWER_ORG}" \
+						--inputs "{'username': '${CRED_USER}', 'password': '${CRED_PASSWORD}'}" >>${STDOUT} 2>>${STDERR}
+				else
+					${AWX} -v credentials create --credential_type ${CRED_TYPE_NUM} \
+						--name "${CRED_NAME}" \
+						--organization "${TOWER_ORG}" \
+						--inputs "{'username': '${CRED_USER}', 'ssh_key_data': '@${CRED_KEY}'}" >>${STDOUT} 2>>${STDERR}
+				fi
 				;;
 			"Source Control")
 				${AWX} -v credentials create --credential_type ${CRED_TYPE_NUM} \

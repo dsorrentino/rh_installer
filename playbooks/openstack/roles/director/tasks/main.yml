@@ -1,6 +1,7 @@
 ---
 - include: 05-validate-deployment-request.yml
 - include: 10-configure-repositories.yml
-- include: 30-install-packages.yml
-- include: 50-configure-director.yml
-- include: 60-deploy-director.yml
+- include: 15-install-packages.yml
+- include: 20-configure-director.yml
+- include: 25-deploy-director.yml
+- include: 30-post-deploy-director.yml

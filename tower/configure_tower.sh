@@ -13,7 +13,7 @@ LOG "stdout" "Installing pre-requisite packages: ${PACKAGES}"
 PACKAGES=$(echo ${PACKAGES} | sed 's/,/ /g')
 sudo yum install ${PACKAGES} -y >>${STDOUT} 2>>${STDERR}
 
-RESULT=$(CREATE_CREDENTIAL "${TOWER_ORG}" "${CRED_GITHUB_NAME}" "${CRED_GITHUB_TYPE}" "${CRED_GITHUB_KEY}")
+RESULT=$(CREATE_CREDENTIAL "${TOWER_ORG}" "${CRED_GITHUB_NAME}" "${CRED_GITHUB_TYPE}" "Key" "${CRED_GITHUB_KEY}")
 
 LOG "stdout" "Creating GITHUB credential."
 if [[ ${RESULT} -ne 0 ]]
@@ -22,8 +22,17 @@ then
 	exit 1
 fi
 
-LOG "stdout" "Creating Director credential."
-RESULT=$(CREATE_CREDENTIAL "${TOWER_ORG}" "${CRED_DIRECTOR_NAME}" "${CRED_DIRECTOR_TYPE}" "${CRED_DIRECTOR_USER}" "${CRED_DIRECTOR_PASSWORD}")
+if [[ ! -z "${CRED_DIRECTOR_KEY}" ]]
+then
+	LOG "stdout" "Creating Director credential using SSH Key ${CRED_DIRECTOR_KEY} file."
+	RESULT=$(CREATE_CREDENTIAL "${TOWER_ORG}" "${CRED_DIRECTOR_NAME}" "${CRED_DIRECTOR_TYPE}" "Key" "${CRED_DIRECTOR_KEY}" "${CRED_DIRECTOR_USER}")
+elif [[ ! -z "${CRED_DIRECTOR_PASSWORD}" ]]
+then
+	LOG "stdout" "Creating Director credential using password."
+	RESULT=$(CREATE_CREDENTIAL "${TOWER_ORG}" "${CRED_DIRECTOR_NAME}" "${CRED_DIRECTOR_TYPE}" "Password" "${CRED_DIRECTOR_PASSWORD}" "${CRED_DIRECTOR_USER}")
+else
+	LOG "stdout" "Warning: No password or key provided for the Director Credential. Please create this manually."
+fi
 
 if [[ ${RESULT} -ne 0 ]]
 then

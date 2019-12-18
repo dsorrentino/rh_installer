@@ -1,6 +1,0 @@
-  - name: Deploy director
-    shell: |
-           cd /home/{{ uc_user }}/
-           openstack undercloud install
-    become: yes
-    become_user: stack

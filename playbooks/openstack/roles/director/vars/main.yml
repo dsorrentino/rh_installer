@@ -1,2 +1,6 @@
 ---
+# Red Hat Openstack versions supported by this project
 acceptable_versions: [10, 13, 14, 15]
+# This can either be an IP address or "undercloud". Using "undercloud" will pull
+# the first nameserver from /etc/resolv.conf and use that
+neutron_nameserver: "undercloud"
