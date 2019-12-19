@@ -4,3 +4,7 @@ acceptable_versions: [10, 13, 14, 15]
 # This can either be an IP address or "undercloud". Using "undercloud" will pull
 # the first nameserver from /etc/resolv.conf and use that
 neutron_nameserver: "undercloud"
+# These variables are utilized as part of the Overcloud template creation logic
+base_templates: "network-environment.yaml,network-isolation.yaml,storage-environment.yaml"
+template_files: []
+

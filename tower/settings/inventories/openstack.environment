@@ -145,6 +145,9 @@ storage_config:
 # If the deployment is going to use Ceph, that will be configured here
 #
 ceph_deployment: none # director, external or none
+# If Director is deploying containerized Ceph, specify the image name to be used
+# here:
+ceph_image: rhceph-3-rhel7
 # The assumption is you will add a property to your baremetal nodes in Ironic
 # that identify the role of the node.  In the example below, it's assumed that there's
 # a property called "node" that is set to ceph*.  This is typically how you would
@@ -170,9 +173,13 @@ ceph_disks:
 #
 ################################################
 #
-# The following settings are all boolean values used to include or exclude
+# The following settings are boolean values used to include or exclude
 # specific templates in the Overcloud Deployment
 deploy_ironic: True
+# If Ironic is being deployed in the Overcloud, you need to specify the 
+# neutron name of the network you intend to create and use as the cleaning
+# nework
+ironic_cleaning_network_name: baremetal
 deploy_sahara: False
 enable_fernet: True
 deploy_octavia: True
