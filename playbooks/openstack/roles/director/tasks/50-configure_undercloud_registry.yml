@@ -5,12 +5,12 @@
         openstack tripleo container image prepare default \
           --local-push-destination \
           --output-env-file /home/{{ uc_user }}/container_data/containers-prepare-parameter.yaml
-      when: registry_type == "local"
+      when: container_registry == "local"
     - name: Generate default container image preparation file (OSP Version {{ osp_version }})
       shell: |
         openstack tripleo container image prepare default \
           --output-env-file /home/{{ uc_user }}/container_data/containers-prepare-parameter.yaml
-      when: registry_type == "remote"
+      when: container_registry == "remote"
     - name: Copy the containers-prepare-parameter.yaml into the templates directory (OSP Version {{ osp_version }})
       copy:
         src: /home/{{ uc_user }}/container_data/containers-prepare-parameter.yaml
