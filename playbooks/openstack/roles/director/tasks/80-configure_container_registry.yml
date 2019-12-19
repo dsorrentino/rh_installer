@@ -81,7 +81,7 @@
         insertbefore: output-images-file 
         line: '  -e {{ tripleo_heat_templates }}/environments/services/octavia.yaml \'
       when: deploy_octavia
-    - name:
+    - name: Debug include_ceph
         debug:
           var: include_ceph
     - name: Add Ceph environment files if needed (Registry Type> {{ container_registry }})
