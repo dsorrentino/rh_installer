@@ -17,7 +17,7 @@
     name: ceph-ansible
     state: latest
   when: osp_version >= 13 
-- name: Install Director Image Packages for the Overcloud
+- name: Install Director Image Packages for the Overcloud and some configuration tooling
   yum:
     name: '{{ packages }}'
     state: latest
@@ -26,3 +26,4 @@
       - rhosp-director-images
       - rhosp-director-images-ipa
       - libguestfs-tools
+      - crudini
