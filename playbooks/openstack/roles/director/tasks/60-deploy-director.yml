@@ -16,5 +16,5 @@
          cd /home/{{ uc_user }}/
          openstack undercloud install
   become: yes
-  become_user: "{{ us_user }}"
+  become_user: "{{ uc_user }}"
   when: undercloud_test.stdout != '0'
