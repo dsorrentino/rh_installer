@@ -1,20 +1,20 @@
-- name: Check if we have a ~{{ uc_user }}/stackrc file
-  stat:
-    path: /home/{{ uc_user }}/stackrc
-  register: stackrc_file
 - name: Check if Director is Deployed
   shell: |
-         source ~/stackrc >/dev/null 2>&1
-         openstack user list >/dev/null 2>&1
-         echo $?
+         if [[ -f ~/stackrc ]]
+         then
+           source ~/stackrc >/dev/null 2>&1
+           openstack user list >/dev/null 2>&1
+           echo $?
+         else
+           echo 1
+         fi
   register: undercloud_test
   become: yes
   become_user: "{{ uc_user }}"
-  when: stackrc_file.stat.exists
 - name: Deploy director (if not deployed)
   shell: |
          cd /home/{{ uc_user }}/
          openstack undercloud install
   become: yes
   become_user: "{{ us_user }}"
-  when: stackrc_file.stat.exists == False and undercloud_test.stdout != '0'
+  when: undercloud_test.stdout != '0'
