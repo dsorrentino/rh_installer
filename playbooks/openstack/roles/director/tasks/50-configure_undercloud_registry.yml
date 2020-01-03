@@ -1,17 +1,17 @@
 - name: Generate container registry files to be used during Director installation (OSP Version {{ osp_version }} >= 14)
   block:
-    - name: Generate default container image preparation file (OSP Version {{ osp_version }})
+    - name: Generate default container image preparation file (OSP Version {{ osp_version }} >= 14)
       shell: |
         openstack tripleo container image prepare default \
           --local-push-destination \
           --output-env-file /home/{{ uc_user }}/container_data/containers-prepare-parameter.yaml
       when: container_registry == "local"
-    - name: Generate default container image preparation file (OSP Version {{ osp_version }})
+    - name: Generate default container image preparation file (OSP Version {{ osp_version }} >= 14)
       shell: |
         openstack tripleo container image prepare default \
           --output-env-file /home/{{ uc_user }}/container_data/containers-prepare-parameter.yaml
       when: container_registry == "remote"
-    - name: Copy the containers-prepare-parameter.yaml into the templates directory (OSP Version {{ osp_version }})
+    - name: Copy the containers-prepare-parameter.yaml into the templates directory (OSP Version {{ osp_version }} >= 14)
       copy:
         src: /home/{{ uc_user }}/container_data/containers-prepare-parameter.yaml
         dest: /home/{{ uc_user }}/templates/containers-prepare-parameter.yaml
@@ -19,7 +19,7 @@
         group: "{{ uc_user }}"
         mode: 0644
         remote_src: yes
-    - name: Add container image preparation file to undercloud.conf (OSP Version {{ osp_version }})
+    - name: Add container image preparation file to undercloud.conf (OSP Version {{ osp_version }} >= 14)
       shell: |
         crudini --set /home/{{ uc_user }}/undercloud.conf DEFAULT container_images_file /home/{{ uc_user }}/templates/containers-prepare-parameter.yaml
   when: osp_version >= 14
