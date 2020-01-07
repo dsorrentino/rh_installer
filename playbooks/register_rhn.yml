@@ -1,0 +1,6 @@
+---
+- name: Register a node to RHN
+  hosts: all
+  become: yes
+  roles:
+    - rhel_node/roles/rhn

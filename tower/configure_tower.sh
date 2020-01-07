@@ -72,6 +72,66 @@ do
 	sleep 10
 done
 
+RH_INSTALLER_RHN_ROLE=$(sudo ls /var/lib/awx/projects/ | grep rh_installer | grep lock | sed 's/.lock//g')
+RH_INSTALLER_RHN_ROLE=/var/lib/awx/projects/${RH_INSTALLER_RHN_ROLE}/playbooks/rhel_node/roles/rhn
+echo ""
+echo "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
+echo ""
+echo "The different products in this project will need to register to RHN to install"
+echo "necessary software. You will now be prompted for credential and pool information."
+echo "The current iteration of this project will use a single RHN user/password"
+echo "for registering a node to RHN. It will support using a differer Pool ID"
+echo "for each product."
+echo ""
+echo "The encrypted files can be found in:"
+echo "  ${RH_INSTALLER_RHN_ROLE}/vars/main.yml"
+echo ""
+echo "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
+echo ""
+
+read -p "[RHN] Enter username to login to RHN Portal with: " RHN_USER
+RHN_PASSWORD=""
+while [[ -z "${RHN_PASSWORD}" ]]
+do
+        read -s -p "[RHN] Enter RHN Portal password for ${RHN_USER}: " RHN_PASSWORD1
+        echo ""
+        read -s -p "[RHN] Confirm RHN Portal password for ${RHN_USER}: " RHN_PASSWORD2
+        echo ""
+        if [[ "${RHN_PASSWORD1}" == "${RHN_PASSWORD2}" ]]
+        then
+                RHN_PASSWORD=${RHN_PASSWORD1}
+        else
+                echo "[Error] Passwords did not match."
+        fi
+done
+read -p "[RHEL] Enter RHN Pool for RHEL: " RHEL_POOL
+read -p "[Openstack] Enter RHN Pool for Openstack: " OPENSTACK_POOL
+
+sudo mkdir -p ${RH_INSTALLER_RHN_ROLE}/vars
+
+VAULT_PW_FILE=$(mktemp -p ~)
+chmod 600 ${VAULT_PW_FILE}
+if [[ -z "$(sudo ls ${RH_INSTALLER_RHN_ROLE}/vars/vault_pw.txt 2>/dev/null)" ]]
+then
+	head /dev/urandom | tr -dc A-Za-z0-9 | head -c 20  >${VAULT_PW_FILE}
+else
+	sudo cat ${RH_INSTALLER_RHN_ROLE}/vars/vault_pw.txt >${VAULT_PW_FILE}
+fi
+
+LOG "stdout" "Creating Vault credential."
+RESULT=$(CREATE_CREDENTIAL "${TOWER_ORG}" "${CRED_RH_INSTALLER_VAULT_NAME}" "Vault" "Password" "$(cat ${VAULT_PW_FILE})")
+
+LOG "stdout" "Storing encrypted data in ${RH_INSTALLER_RHN_ROLE}/vars/main.yml"
+echo ""
+echo "rhn_user: darin.sorrentino" | sudo tee ${RH_INSTALLER_RHN_ROLE}/vars/main.yml
+echo -n "${RHN_PASSWORD}" | ansible-vault encrypt_string --vault-password-file ${VAULT_PW_FILE} --stdin-name 'rhn_password' | sudo tee -a ${RH_INSTALLER_RHN_ROLE}/vars/main.yml
+echo -n "${RHEL_POOL}" | ansible-vault encrypt_string --vault-password-file ${VAULT_PW_FILE} --stdin-name 'rhel_pool' | sudo tee -a ${RH_INSTALLER_RHN_ROLE}/vars/main.yml
+echo -n "${OPENSTACK_POOL}" | ansible-vault encrypt_string --vault-password-file ${VAULT_PW_FILE} --stdin-name 'openstack_pool' | sudo tee -a ${RH_INSTALLER_RHN_ROLE}/vars/main.yml
+
+sudo mv ${VAULT_PW_FILE} ${RH_INSTALLER_RHN_ROLE}/vars/vault_pw.txt
+sudo chmod 0600 ${RH_INSTALLER_RHN_ROLE}/vars/vault_pw.txt
+sudo chown -R awx:awx ${RH_INSTALLER_RHN_ROLE}/vars
+
 for NDX in $(echo "${!TEMPLATE[@]}" | sed 's/,[a-zA-Z][a-zA-Z]*/ /g' |  xargs -n1 | sort -u)
 do
 	for SETTING in $(echo "${!TEMPLATE[@]}" | sed 's/[0-9],//g' | tr " " "\n" | sort -u)
@@ -80,7 +140,7 @@ do
 	        eval ${VARNAME}="'${TEMPLATE[$NDX,$SETTING]}'" 2>>${STDERR}
 	done
 	LOG "stdout" "Creating template: ${TEMPLATE_Name}"
-	RESULT=$(CREATE_TEMPLATE "${TEMPLATE_Name}" "${TEMPLATE_Description}" "${INV_OPENSTACK_NAME}" "${HOST_DIRECTOR_NAME}" "${PROJ_NAME}" "${TEMPLATE_Credential}" "${TEMPLATE_Playbook}" "${TEMPLATE_Variables}")
+	RESULT=$(CREATE_TEMPLATE "${TEMPLATE_Name}" "${TEMPLATE_Description}" "${INV_OPENSTACK_NAME}" "${HOST_DIRECTOR_NAME}" "${PROJ_NAME}" "${TEMPLATE_Credentials}" "${TEMPLATE_Playbook}" "${TEMPLATE_Variables}")
 	if [[ ${RESULT} -ne 0 ]]
 	then
 		LOG "stdout" "Failed to create template: ${TEMPLATE_CONFIGURE_DIRECTOR_NAME}"

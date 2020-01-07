@@ -3,7 +3,7 @@
     state: present
     username: "{{ rhn_user }}"
     password: "{{ rhn_password }}"
-    pool: "{{ rhn_pool }}"
+    pool: "{{ rhel_pool }}"
   when: rhn_user != "" and rhn_password != "" and rhn_pool != ""
 - name: Configure Repositories - Disable All
   rhsm_repository:

@@ -30,12 +30,12 @@ declare -A TEMPLATE
 TEMPLATE[1,Name]="Director Node"
 TEMPLATE[1,Description]="Register node to RHN, configure node repositories, configured undercloud.conf and perform yum update"
 TEMPLATE[1,Playbook]="playbooks/openstack/create_director.yml"
-TEMPLATE[1,Credential]="Director Credential"
-TEMPLATE[1,Variables]="{'rhn_user': 'None', 'rhn_password': 'None', 'rhn_pool': 'None'}"
+TEMPLATE[1,Credentials]="Director Credential,RH Installer Vault"
+TEMPLATE[1,Variables]=""
 TEMPLATE[2,Name]="Configure Container Registry"
 TEMPLATE[2,Description]="Configure Container Repository"
 TEMPLATE[2,Playbook]="playbooks/openstack/create_container_registry.yml"
-TEMPLATE[2,Credential]="Director Credential"
+TEMPLATE[2,Credentials]="Director Credential"
 TEMPLATE[2,Variables]="{'registry_type': 'local', 'ceph_image': 'rhceph-3-rhel7'}"
 ################################################
 # Credentials
@@ -59,6 +59,7 @@ export CRED_DIRECTOR_USER=root
 export CRED_DIRECTOR_KEY=/home/dsorrent/.ssh/id_rsa
 export CRED_DIRECTOR_PASSWORD=Redhat01!
 export CRED_DIRECTOR_TYPE="Machine"
+export CRED_RH_INSTALLER_VAULT_NAME="RH Installer Vault"
 ################################################
 # Project
 ################################################

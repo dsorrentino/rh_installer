@@ -34,6 +34,17 @@ function CREATE_CREDENTIAL {
 	else
 		CRED_TYPE_NUM=$(GET_ID "Credential Type" "${CRED_TYPE}")
 		case ${CRED_TYPE} in
+			"Vault")
+				LOG "file" "${AWX} -v credentials create --credential_type ${CRED_TYPE_NUM} \
+					--name \"${CRED_NAME}\" \
+					--organization \"${TOWER_ORG}\" \
+					--inputs \"{'vault_password': '${CRED_PASSWORD}'}\" >>${STDOUT} 2>>${STDERR}"
+				${AWX} -v credentials create --credential_type ${CRED_TYPE_NUM} \
+					--name "${CRED_NAME}" \
+					--organization "${TOWER_ORG}" \
+					--inputs "{'vault_password': '${CRED_PASSWORD}'}" >>${STDOUT} 2>>${STDERR}
+				RESULT=$?
+				;;
 			"Machine")
 				if [[ "${AUTH_TYPE}" == "Password" ]]
 				then
@@ -201,7 +212,7 @@ function GET_ID {
 			SEARCH_RESULT=$(${AWX} credentials list 2>>${STDERR} | jq '.results[] | "\(.id) \(.name)"' 2>>${STDERR} | egrep " ${RESOURCE_NAME}\"\$" 2>>${STDERR})
 			;;
 		"Credential Type")
-			SEARCH_RESULT=$(${AWX} credential_type list 2>>${STDERR} | jq '.results[] | "\(.id) \(.name)"' 2>>${STDERR} | egrep " ${RESOURCE_NAME}\"\$" 2>>${STDERR})
+			SEARCH_RESULT=$(${AWX} credential_type list 2>>${STDERR} | jq '.results[] | "\(.id) \(.name)"' 2>>${STDERR} | egrep "[0-9] ${RESOURCE_NAME}\"\$" 2>>${STDERR})
 			;;
 		"Inventory")
 			SEARCH_RESULT=$(${AWX} inventory list 2>>${STDERR} | jq '.results[] | "\(.id) \(.name)"' 2>>${STDERR} | egrep " ${RESOURCE_NAME}\"\$" 2>>${STDERR})
@@ -231,7 +242,8 @@ function CREATE_TEMPLATE {
 	local LIMIT_HOST=$4
 	local PROJECT=$5
 	local PROJ_ID=""
-	local CREDENTIAL=$6
+	local CREDENTIAL_LIST=$6
+	local CREDENTIAL=""
 	local CRED_ID=""
 	local PLAYBOOK=$7
 	local VARIABLES=$8
@@ -244,13 +256,11 @@ function CREATE_TEMPLATE {
 	else
 		INV_ID=$(GET_ID "Inventory" "${INVENTORY}")
 		PROJ_ID=$(GET_ID "Project" "${PROJECT}")
-		CRED_ID=$(GET_ID "Credential" "${CREDENTIAL}")
-		if [[ -z "${INV_ID}" || -z "${PROJ_ID}" || -z "${CRED_ID}" ]]
+		if [[ -z "${INV_ID}" || -z "${PROJ_ID}" ]]
 		then
 			LOG "file" "Can't locate requested resources."
 			LOG "file" "Inventory: ${INVENTORY} (${INV_ID})"
 			LOG "file" "Project: ${PROJECT} (${PROJ_ID})"
-			LOG "file" "Credential: ${CREDENTIAL} (${CRED_ID})"
 			RESULT=1
 		else
 			if [[ ! -z "$VARIABLES" ]]
@@ -269,8 +279,15 @@ function CREATE_TEMPLATE {
 			if [[ ${RESULT} -eq 0 ]]
 			then
 				TEMPLATE_ID=$(GET_ID "Template" "${NAME}")
-				${AWX} job_templates associate --credential ${CRED_ID} ${TEMPLATE_ID} >>${STDOUT} 2>>${STDERR}
-				RESULT=$?
+				if [[ ! -z "${CREDENTIAL_LIST}" ]]
+				then
+					echo ${CREDENTIAL_LIST} | sed 's/,/\n/g' | while read CREDENTIAL
+					do
+						CRED_ID=$(GET_ID "Credential" "${CREDENTIAL}")
+						${AWX} job_templates associate --credential ${CRED_ID} ${TEMPLATE_ID} >>${STDOUT} 2>>${STDERR}
+						RESULT=$(( ${RESULT} + $? ))
+					done
+				fi
 			fi
 			if [[ -f ${EXTRA_VARS_FILE} ]]
 			then
