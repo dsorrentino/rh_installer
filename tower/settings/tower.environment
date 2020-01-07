@@ -39,7 +39,7 @@ TEMPLATE[2,Credentials]="Director Credential"
 TEMPLATE[2,Variables]="{'registry_type': 'local', 'ceph_image': 'rhceph-3-rhel7'}"
 TEMPLATE[3,Name]="Attach RHEL to RHN"
 TEMPLATE[3,Description]="This will register inventory to RHN"
-TEMPLATE[3,Playbook]="playbooks/register_rhn.yml"
+TEMPLATE[3,Playbook]="playbooks/rhn/register_node.yml"
 TEMPLATE[3,Credentials]="Director Credential,RH Installer Vault"
 TEMPLATE[3,Variables]=""
 ################################################
