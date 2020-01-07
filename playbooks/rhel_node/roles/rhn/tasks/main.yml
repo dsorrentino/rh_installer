@@ -1,3 +1,4 @@
+- include_vars: "{{ rhn_local }}"
 - name: Show user
   debug:
     var: rhn_user

@@ -72,7 +72,7 @@ do
 	sleep 10
 done
 
-RH_INSTALL_LOCAL_DIR=/var/lib/awx/project/rh_installer.local
+RH_INSTALL_LOCAL_DIR=/var/lib/awx/projects/rh_installer.local
 
 echo ""
 echo "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"

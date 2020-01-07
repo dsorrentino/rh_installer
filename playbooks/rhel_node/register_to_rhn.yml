@@ -2,7 +2,7 @@
 - name: Register a node to RHN
   hosts: all
   become: yes
-  vars_files:
-          - '/var/lib/awx/project/rh_installer.local/vars/rhn.yml'
+  vars:
+    rhn_local: /var/lib/awx/projects/rh_installer.local/vars/rhn.yml
   roles:
     - rhn
