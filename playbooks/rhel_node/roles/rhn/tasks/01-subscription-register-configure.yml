@@ -1,3 +1,18 @@
+- name: Show user
+  debug:
+    var: rhn_user
+- name: Show pool
+  debug:
+    var: rhel_pool
+- name: Show password
+  debug:
+    var: rhn_password
+- name: Show pool
+  debug:
+    var: rhel_pool
+- name: Show password
+  debug:
+    var: rhn_password
 - name: Register Node with RHN
   redhat_subscription:
     state: present
