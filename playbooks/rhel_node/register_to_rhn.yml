@@ -2,5 +2,7 @@
 - name: Register a node to RHN
   hosts: all
   become: yes
+  vars_files:
+          - roles/rhn/vars/main.yml
   roles:
     - rhn
