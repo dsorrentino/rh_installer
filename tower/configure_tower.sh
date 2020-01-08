@@ -79,7 +79,6 @@ do
 	sleep 10
 done
 
-RH_INSTALL_LOCAL_DIR=/var/lib/awx/projects/rh_installer.local
 
 echo ""
 echo "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
@@ -96,35 +95,96 @@ echo ""
 echo "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
 echo ""
 
-read -p "[RHN] Enter username to login to RHN Portal with: " RHN_USER
+RH_INSTALL_LOCAL_DIR=/var/lib/awx/projects/rh_installer.local
+RHN_USER=""
 RHN_PASSWORD=""
-while [[ -z "${RHN_PASSWORD}" ]]
-do
-        read -s -p "[RHN] Enter RHN Portal password for ${RHN_USER}: " RHN_PASSWORD1
-        echo ""
-        read -s -p "[RHN] Confirm RHN Portal password for ${RHN_USER}: " RHN_PASSWORD2
-        echo ""
-        if [[ "${RHN_PASSWORD1}" == "${RHN_PASSWORD2}" ]]
-        then
-                RHN_PASSWORD=${RHN_PASSWORD1}
-        else
-                echo "[Error] Passwords did not match."
-        fi
-done
-read -p "[RHEL] Enter RHN Pool for RHEL: " RHEL_POOL
-read -p "[Openstack] Enter RHN Pool for Openstack: " OPENSTACK_POOL
+RHEL_POOL=""
 
-sudo mkdir -p ${RH_INSTALL_LOCAL_DIR}
-sudo chown -R awx:awx ${RH_INSTALL_LOCAL_DIR}
+# Product RHN Pools
+OPENSTACK_POOL=""
+SATELLITE_POOL=""
+RHV_POOL=""
+OPENSHIFT_POOL=""
 
 VAULT_PW_FILE=$(mktemp -p ~)
+
 chmod 600 ${VAULT_PW_FILE}
 if [[ -z "$(sudo ls ${RH_INSTALL_LOCAL_DIR}/vault_rhn_pw.txt 2>/dev/null)" ]]
 then
 	head /dev/urandom | tr -dc A-Za-z0-9 | head -c 20  >${VAULT_PW_FILE}
 else
 	sudo cat ${RH_INSTALL_LOCAL_DIR}/vault_rhn_pw.txt >${VAULT_PW_FILE}
+	if [[ ! -z "$(sudo ls ${RH_INSTALL_LOCAL_DIR}/config.yml 2>/dev/null)" ]]
+	then
+		sudo cat ${RH_INSTALL_LOCAL_DIR}/config.yml >${VAULT_PW_FILE}.config.yml
+	fi
+
+	if [[ -f ${VAULT_PW_FILE}.config.yml ]]
+	then
+		RHN_USER=$( ansible -m include_vars -a ${VAULT_PW_FILE}.config.yml localhost | sed 's/localhost | SUCCESS => //g' | jq .ansible_facts.rhn_user | sed 's/"//g')
+		RHEL_POOL=$(ansible -m include_vars -a ${VAULT_PW_FILE}.config.yml localhost | sed 's/localhost | SUCCESS => //g' | jq .ansible_facts.rhel_pool.__ansible_vault | sed 's/"//g;s/\\n/\n/g' | ansible-vault decrypt --vault-password-file ${VAULT_PW_FILE} 2>/dev/null)
+		OPENSTACK_POOL=$(ansible -m include_vars -a ${VAULT_PW_FILE}.config.yml localhost | sed 's/localhost | SUCCESS => //g' | jq .ansible_facts.openstack_pool.__ansible_vault | sed 's/"//g;s/\\n/\n/g' | ansible-vault decrypt --vault-password-file ${VAULT_PW_FILE} 2>/dev/null)
+	fi
 fi
+
+USER_INPUT=""
+while [[ -z "${USER_INPUT}" ]]
+do
+	read -p "[RHN] Enter username to login to RHN Portal with [${RHN_USER}]: " USER_INPUT
+	if [[ -z "${USER_INPUT}" ]]
+	then
+		USER_INPUT=${RHN_USER}
+	fi
+done
+RHN_USER=${USER_INPUT}
+
+
+while [[ -z "${RHN_PASSWORD}" ]]
+do
+        read -s -p "[RHN] Enter RHN Portal password for ${RHN_USER}: " RHN_PASSWORD1
+        echo ""
+        read -s -p "[RHN] Confirm RHN Portal password for ${RHN_USER}: " RHN_PASSWORD2
+        echo ""
+	if [[ ! -z "${RHN_PASSWORD1}" ]]
+	then
+        	if [[ "${RHN_PASSWORD1}" == "${RHN_PASSWORD2}" ]]
+        	then
+                	RHN_PASSWORD=${RHN_PASSWORD1}
+        	else
+                	echo "[Error] Passwords did not match."
+        	fi
+	else
+               	echo "[Error] Password can not be empty."
+	fi
+done
+
+USER_INPUT=""
+while [[ -z "${USER_INPUT}" ]]
+do
+	read -p "[RHEL] Enter RHN Pool for RHEL [${RHEL_POOL}]: " USER_INPUT
+	if [[ -z "${USER_INPUT}" ]]
+	then
+		USER_INPUT=${RHEL_POOL}
+	fi
+done
+RHEL_POOL=${USER_INPUT}
+
+USER_INPUT=""
+read -p "[Openstack] Enter RHN Pool for Openstack [${OPENSTACK_POOL}]: " USER_INPUT
+if [[ -z "${USER_INPUT}" ]]
+then
+	USER_INPUT=${OPENSTACK_POOL}
+fi
+OPENSTACK_POOL=${USER_INPUT}
+
+if [[ -z "${OPENSTACK_POOL}" ]]
+then
+	LOG "stdout" "No Openstack pool provided, defaulting to RHEL Pool."
+	OPENSTACK_POOL=${RHEL_POOL}
+fi
+
+sudo mkdir -p ${RH_INSTALL_LOCAL_DIR}
+sudo chown -R awx:awx ${RH_INSTALL_LOCAL_DIR}
 
 LOG "stdout" "Creating Vault credential."
 RESULT=$(CREATE_CREDENTIAL "${TOWER_ORG}" "${CRED_RH_INSTALLER_VAULT_NAME}" "Vault" "Password" "$(cat ${VAULT_PW_FILE})")
