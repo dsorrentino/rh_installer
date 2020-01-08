@@ -2,3 +2,11 @@
   fail:
     msg: "This project currently only supports versions: {{ acceptable_versions }}"
   when: osp_version not in acceptable_versions
+- name: Ensure the requested version of Red Hat Openstack ({{ osp_version }}) is viable for the installed RHEL version (RHEL 7)
+  fail:
+    msg: "Red Hat Openstack Version {{ osp_version }} can not be installed on RHEL 7."
+  when: ansible_facts['cmdline']['BOOT_IMAGE'] is search('vmlinuz-3') and osp_version >= 15
+- name: Ensure the requested version of Red Hat Openstack ({{ osp_version }}) is viable for the installed RHEL version (RHEL 8)
+  fail:
+    msg: "Red Hat Openstack Version {{ osp_version }} can not be installed on RHEL 8."
+  when: ansible_facts['cmdline']['BOOT_IMAGE'] is search('vmlinuz-4') and osp_version < 15
