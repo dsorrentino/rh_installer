@@ -215,22 +215,22 @@ function GET_ID {
 	local SEARCH_RESULT=""
 	case ${RESOURCE_TYPE} in
 		"Credential")
-			SEARCH_RESULT=$(${AWX} credentials list 2>>${STDERR} | jq '.results[] | "\(.id) \(.name)"' 2>>${STDERR} | egrep " ${RESOURCE_NAME}\"\$" 2>>${STDERR})
+			SEARCH_RESULT=$(${AWX} credentials list 2>>${STDERR} | jq '.results[] | "\(.id) \(.name)"' 2>>${STDERR} | egrep "[0-9] ${RESOURCE_NAME}\"\$" 2>>${STDERR})
 			;;
 		"Credential Type")
 			SEARCH_RESULT=$(${AWX} credential_type list 2>>${STDERR} | jq '.results[] | "\(.id) \(.name)"' 2>>${STDERR} | egrep "[0-9] ${RESOURCE_NAME}\"\$" 2>>${STDERR})
 			;;
 		"Inventory")
-			SEARCH_RESULT=$(${AWX} inventory list 2>>${STDERR} | jq '.results[] | "\(.id) \(.name)"' 2>>${STDERR} | egrep " ${RESOURCE_NAME}\"\$" 2>>${STDERR})
+			SEARCH_RESULT=$(${AWX} inventory list 2>>${STDERR} | jq '.results[] | "\(.id) \(.name)"' 2>>${STDERR} | egrep "[0-9] ${RESOURCE_NAME}\"\$" 2>>${STDERR})
 			;;
 		"Project")
-			SEARCH_RESULT=$(${AWX} projects list 2>>${STDERR} | jq '.results[] | "\(.id) \(.name)"' 2>>${STDERR} | egrep " ${RESOURCE_NAME}\"\$" 2>>${STDERR})
+			SEARCH_RESULT=$(${AWX} projects list 2>>${STDERR} | jq '.results[] | "\(.id) \(.name)"' 2>>${STDERR} | egrep "[0-9] ${RESOURCE_NAME}\"\$" 2>>${STDERR})
 			;;
 		"Organization")
-			SEARCH_RESULT=$(${AWX} organization list 2>>${STDERR} | jq '.results[] | "\(.id) \(.name)"' 2>>${STDERR} | egrep " ${RESOURCE_NAME}\"\$" 2>>${STDERR})
+			SEARCH_RESULT=$(${AWX} organization list 2>>${STDERR} | jq '.results[] | "\(.id) \(.name)"' 2>>${STDERR} | egrep "[0-9] ${RESOURCE_NAME}\"\$" 2>>${STDERR})
 			;;
 		"Template")
-			SEARCH_RESULT=$(${AWX} job_templates list 2>>${STDERR} | jq '.results[] | "\(.id) \(.name)"' 2>>${STDERR} | egrep " ${RESOURCE_NAME}\"\$" 2>>${STDERR})
+			SEARCH_RESULT=$(${AWX} job_templates list 2>>${STDERR} | jq '.results[] | "\(.id) \(.name)"' 2>>${STDERR} | egrep "[0-9] ${RESOURCE_NAME}\"\$" 2>>${STDERR})
 			;;
 	esac
 	if [[ ! -z "${SEARCH_RESULT}" ]]
