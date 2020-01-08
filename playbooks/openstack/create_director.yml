@@ -2,5 +2,7 @@
 - name: Configure Director Node
   hosts: all
   become: yes
+  vars:
+    rhn_installer_local_config: /var/lib/awx/projects/rh_installer.local/config.yml
   roles:
     - roles/director

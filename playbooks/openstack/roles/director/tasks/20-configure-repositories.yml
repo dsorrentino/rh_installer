@@ -1,3 +1,11 @@
+- name: Load the rhn_installer.local.yml variables
+  include_vars: "{{ rhn_installer_local_config }}"
+- name: Attach system to Pool for Openstack
+  redhat_subscription:
+    state: present
+    username: "{{ rhn_user }}"
+    password: "{{ rhn_password }}"
+    pool: "{{ openstack_pool }}"
 - name: Configure Openstack Repositories - Version {{ osp_version }} (RHEL7)
   rhsm_repository:
     name: "{{ item }}"
