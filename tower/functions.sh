@@ -6,7 +6,7 @@ $(TOWER_USERNAME=${TOWER_USERNAME} TOWER_PASSWORD=${TOWER_PASSWORD} ${AWX} login
 function TOWER_CONFIG {
 	local KEY=$1
 	local VALUE=$2
-	${AWX} settings modify ${KEY} ${VALUE} >>${STDOUT} 2>>${STDERR}"
+	${AWX} settings modify ${KEY} ${VALUE} >>${STDOUT} 2>>${STDERR}
 }
 
 function CREATE_CREDENTIAL {
