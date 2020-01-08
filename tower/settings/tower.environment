@@ -30,7 +30,7 @@ declare -A TEMPLATE
 TEMPLATE[1,Name]="RHI - Director Node"
 TEMPLATE[1,Description]="Register node to RHN, configure node repositories, configured undercloud.conf and perform yum update"
 TEMPLATE[1,Playbook]="playbooks/openstack/create_director.yml"
-TEMPLATE[1,Credentials]="Director Credential"
+TEMPLATE[1,Credentials]="Director Credential,RH Installer Vault"
 TEMPLATE[1,Variables]=""
 TEMPLATE[2,Name]="RHI - Configure Container Registry"
 TEMPLATE[2,Description]="Configure Container Repository"
