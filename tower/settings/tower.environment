@@ -27,7 +27,7 @@ export TOWER_URL=https://172.16.225.225
 #
 ################################################
 declare -A TEMPLATE
-TEMPLATE[1,Name]="RHI - Director Node"
+TEMPLATE[1,Name]="RHI - Director Node Install and Configure"
 TEMPLATE[1,Description]="Register node to RHN, configure node repositories, configured undercloud.conf and perform yum update"
 TEMPLATE[1,Playbook]="playbooks/openstack/create_director.yml"
 TEMPLATE[1,Credentials]="Director Credential,RH Installer Vault"
