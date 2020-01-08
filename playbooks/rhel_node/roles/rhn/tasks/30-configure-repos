@@ -1,0 +1,22 @@
+- name: Configure Repositories - Disable All
+  rhsm_repository:
+    name: '*'
+    state: disabled
+  when: rhn_user != "" and rhn_password != "" and rhel_pool != ""
+- name: Configure Repositories - Enable RHEL 7
+  rhsm_repository:
+    name: "{{ item }}"
+    state: enabled
+  with_items:
+    - rhel-7-server-extras-rpms
+    - rhel-7-server-rh-common-rpms
+    - rhel-7-server-rpms
+  when: ansible_facts['cmdline']['BOOT_IMAGE'] is search('vmlinuz-3') and rhn_user != "" and rhn_password != "" and rhel_pool != ""
+- name: Configure Repositories - Enable RHEL 8
+  rhsm_repository:
+    name: "{{ item }}"
+    state: enabled
+  with_items:
+    - rhel-8-for-x86_64-baseos-rpms
+    - rhel-8-for-x86_64-appstream-rpms
+  when: ansible_facts['cmdline']['BOOT_IMAGE'] is search('vmlinuz-4') and rhn_user != "" and rhn_password != "" and rhel_pool != ""

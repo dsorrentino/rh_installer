@@ -1,0 +1,16 @@
+- name: Copy the rh_installer.local.yml file to the node
+  copy:
+    src: "{{ rhn_installer_local_config }}"
+    dest: /var/tmp/rhn_installer.local.yml
+- name: Load the rhn_installer.local.yml variables 
+  include_vars:
+    - /var/tmp/rhn_installer.local.yml
+- name: Show user
+  debug:
+    var: rhn_user
+- name: Show password
+  debug:
+    var: rhn_password
+- name: Show pool
+  debug:
+    var: rhel_pool

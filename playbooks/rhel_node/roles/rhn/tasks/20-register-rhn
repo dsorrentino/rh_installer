@@ -1,0 +1,7 @@
+- name: Register Node with RHN
+  redhat_subscription:
+    state: present
+    username: "{{ rhn_user }}"
+    password: "{{ rhn_password }}"
+    pool: "{{ rhel_pool }}"
+  when: rhn_user != "" and rhn_password != "" and rhel_pool != ""

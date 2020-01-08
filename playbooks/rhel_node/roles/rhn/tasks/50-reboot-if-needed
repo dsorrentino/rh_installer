@@ -1,0 +1,6 @@
+- name: Reboot if there were packages updated
+  reboot:
+    connect_timeout: 600
+    msg: "Packages finished updating, rebooting node."
+    post_reboot_delay: 120
+  when: packages_updated is changed
