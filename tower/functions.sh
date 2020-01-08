@@ -170,7 +170,7 @@ function CREATE_PROJECT {
 
 	if [[ $(RESOURCE_EXISTS "Project" "${PROJ_NAME}") == true ]]
 	then
-		LOG "file" "Project ${PROJ_Name} already exists."
+		LOG "file" "Project ${PROJ_NAME} already exists."
 	else
 		PROJ_CRED_ID=$(GET_ID "Credential" "${PROJ_CREDS}")
 		ORG_ID=$(GET_ID "Organization" "${TOWER_ORG}")
@@ -186,19 +186,19 @@ function RESOURCE_EXISTS {
 	local SEARCH_RESULT=""
 	case ${RESOURCE_TYPE} in
 		"Credential")
-			SEARCH_RESULT=$(${AWX} credentials list 2>>${STDERR} | jq .results[].name  2>>${STDERR} | egrep "${RESOURCE_NAME}\"\$" 2>>${STDERR})
+			SEARCH_RESULT=$(${AWX} credentials list 2>>${STDERR} | jq .results[].name  2>>${STDERR} | egrep "^\"${RESOURCE_NAME}\"\$" 2>>${STDERR})
 			;;
 		"Inventory")
-			SEARCH_RESULT=$(${AWX} inventory list 2>>${STDERR} | jq .results[].name  2>>${STDERR} | egrep "${RESOURCE_NAME}\"\$" 2>>${STDERR})
+			SEARCH_RESULT=$(${AWX} inventory list 2>>${STDERR} | jq .results[].name  2>>${STDERR} | egrep "^\"${RESOURCE_NAME}\"\$" 2>>${STDERR})
 			;;
 		"Host")
 			SEARCH_RESULT=$(${AWX} hosts list --name "${RESOURCE_NAME}" 2>>${STDERR} | jq .count 2>>${STDERR} | egrep -v '^0$' 2>>${STDERR})
 			;;
 		"Project")
-			SEARCH_RESULT=$(${AWX} projects list 2>>${STDERR} | jq '.results[] | "\(.id) \(.name)"' 2>>${STDERR} | egrep "${RESOURCE_NAME}\"\$" 2>>${STDERR})
+			SEARCH_RESULT=$(${AWX} projects list 2>>${STDERR} | jq .results[].name 2>>${STDERR} | egrep "^\"${RESOURCE_NAME}\"\$" 2>>${STDERR})
 			;;
 		"Template")
-			SEARCH_RESULT=$(${AWX} job_templates list 2>>${STDERR} | jq '.results[] | "\(.id) \(.name)"' 2>>${STDERR} | egrep "${RESOURCE_NAME}\"\$" 2>>${STDERR})
+			SEARCH_RESULT=$(${AWX} job_templates list 2>>${STDERR} | jq .results[].name 2>>${STDERR} | egrep "^\"${RESOURCE_NAME}\"\$" 2>>${STDERR})
 			;;
 	esac
 	if [[ -z "${SEARCH_RESULT}" ]]
