@@ -3,5 +3,4 @@
   hosts: all
   become: yes
   roles:
-    - ../rhel_node/roles/rhn
     - roles/director
