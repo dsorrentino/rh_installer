@@ -13,9 +13,16 @@ LOG "stdout" "Installing pre-requisite packages: ${PACKAGES}"
 PACKAGES=$(echo ${PACKAGES} | sed 's/,/ /g')
 sudo yum install ${PACKAGES} -y >>${STDOUT} 2>>${STDERR}
 
-RESULT=$(CREATE_CREDENTIAL "${TOWER_ORG}" "${CRED_GITHUB_NAME}" "${CRED_GITHUB_TYPE}" "Key" "${CRED_GITHUB_KEY}")
+
+LOG "stdout" "Disabling Job Isolation"
+LOG "stdout" "We need to do this since the Github Templates need to use some"
+LOG "stdout" "locally created files that will contain information relaitive to"
+LOG "stdout" "your enterprise/environment, such as your RHN connection data."
+
+TOWER_CONFIG "AWX_PROOT_ENABLED" "false"
 
 LOG "stdout" "Creating GITHUB credential."
+RESULT=$(CREATE_CREDENTIAL "${TOWER_ORG}" "${CRED_GITHUB_NAME}" "${CRED_GITHUB_TYPE}" "Key" "${CRED_GITHUB_KEY}")
 if [[ ${RESULT} -ne 0 ]]
 then
 	LOG "stdout" "Failed to create GITHUB credentials."
@@ -108,7 +115,7 @@ read -p "[RHEL] Enter RHN Pool for RHEL: " RHEL_POOL
 read -p "[Openstack] Enter RHN Pool for Openstack: " OPENSTACK_POOL
 
 sudo mkdir -p ${RH_INSTALL_LOCAL_DIR}
-chown -R awx:awx ${RH_INSTALL_LOCAL_DIR}
+sudo chown -R awx:awx ${RH_INSTALL_LOCAL_DIR}
 
 VAULT_PW_FILE=$(mktemp -p ~)
 chmod 600 ${VAULT_PW_FILE}

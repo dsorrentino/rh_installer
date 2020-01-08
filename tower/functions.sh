@@ -3,6 +3,12 @@ export TOWER_HOST=${TOWER_URL}
 
 $(TOWER_USERNAME=${TOWER_USERNAME} TOWER_PASSWORD=${TOWER_PASSWORD} ${AWX} login -f human)
 
+function TOWER_CONFIG {
+	local KEY=$1
+	local VALUE=$2
+	${AWX} settings modify ${KEY} ${VALUE} >>${STDOUT} 2>>${STDERR}"
+}
+
 function CREATE_CREDENTIAL {
 	local TOWER_ORG=$1
 	local CRED_NAME=$2
