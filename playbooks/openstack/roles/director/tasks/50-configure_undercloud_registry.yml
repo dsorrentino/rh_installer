@@ -1,5 +1,12 @@
 - name: Generate container registry files to be used during Director installation (OSP Version {{ osp_version }} >= 14)
   block:
+    - name: Create a containers subdirectory for intermediate work files (OSP Version {{ osp_version }} >= 14)
+      file:
+        state: directory
+        path: /home/{{ uc_user }}/container_data
+        owner: "{{ uc_user }}"
+        group: "{{ uc_user }}"
+        mode: u+rwx,g+rx,o+rx
     - name: Generate default container image preparation file (OSP Version {{ osp_version }} >= 14)
       shell: |
         openstack tripleo container image prepare default \
