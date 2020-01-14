@@ -1,12 +1,5 @@
 - name: Create container registry for Overcloud (OSP Version {{ osp_version }} is 12 or 13)
   block:
-    - name: Create a containers subdirectory for intermediate work files
-      file:
-        state: directory
-        path: /home/{{ uc_user }}/container_data
-        owner: "{{ uc_user }}"
-        group: "{{ uc_user }}"
-        mode: u+rwx,g+rx,o+rx
     - name: Create a default fact that we are not using Ceph
       set_fact:
         include_ceph: False
