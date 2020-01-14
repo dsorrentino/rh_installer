@@ -10,9 +10,17 @@ How to use:
      This node must be able to reach the internet so it can configure and pull
      from this git repository.
 2) Clone this repository to the VM/Node.
-3) In rhe cloned respository, edit the following file:
+3) In the cloned respository, edit the following file:
      rh_installer/tower/settings/tower.environment
    This contains variables to configure various artifacts in Ansible Tower (See Below)
+
+   Additionally, you can edit the files for the products products
+   located in this directory:
+     rh_installer/tower/settings/inventories/
+
+   These are just the default settings, you can always update the product settings in
+   the inventory within Tower after you've done step 4.
+
 4) Run the script: rh_installer/tower/configure_tower.sh
 
 This script will create a number of artifacts in your Ansible Tower Deployment:

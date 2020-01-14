@@ -252,13 +252,14 @@
       regexp: "^#enable_telemetry "
       line: "enable_telemetry = {{ enable_telemetry }}"
     become: yes
-  - name: Configure undercloud.conf - enable_ui
+  - name: Configure undercloud.conf - enable_ui (OSP Version {{ osp_version }} <= 14)
     lineinfile:
       path: /home/{{ uc_user }}/undercloud.conf
       state: present
       regexp: "^#enable_ui "
       line: "enable_ui = {{ enable_ui }}"
     become: yes
+    when: osp_version <= 14
   - name: Configure undercloud.conf - enable_validations 
     lineinfile:
       path: /home/{{ uc_user }}/undercloud.conf
@@ -342,7 +343,7 @@
     when: osp_version >= 14 and director_provisioning_mtu  > 1500
   - name: Configure undercloud.conf - container_images_file (OSP Version {{ osp_version }} >= 14)
     shell: |
-      crudini --set /home/{{ uc_user }}/undercloud.conf DEFAULT container_images_file /home/stack/templates/containers-prepare-parameter.yaml
+      crudini --set /home/{{ uc_user }}/undercloud.conf DEFAULT container_images_file /home/{{ uc_user }}/templates/containers-prepare-parameter.yaml
     become: yes
     when: osp_version >= 14
   - name: Extract overcloud images for later.
