@@ -17,7 +17,7 @@
          openstack undercloud install
   become: yes
   become_user: "{{ uc_user }}"
-  when: undercloud_test.stdout != '0' and osp_verion <= 14
+  when: undercloud_test.stdout != '0' and osp_version <= 14
 - name: Deploy director (if not deployed) (OSP Version {{ osp_version }} >= 15)
   shell: |
          cd /home/{{ uc_user }}/
