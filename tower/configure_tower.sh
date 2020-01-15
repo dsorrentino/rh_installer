@@ -99,6 +99,9 @@ RH_INSTALL_LOCAL_DIR=/var/lib/awx/projects/rh_installer.local
 RHN_USER=""
 RHN_PASSWORD=""
 RHEL_POOL=""
+REGISTRY_USER=""
+REGISTRY_PASSWORD=""
+REGISTRY_HOSTNAME="registry.redhat.io"
 
 # Product RHN Pools
 OPENSTACK_POOL=""
@@ -121,9 +124,10 @@ else
 
 	if [[ -f ${VAULT_PW_FILE}.config.yml ]]
 	then
-		RHN_USER=$( ansible -m include_vars -a ${VAULT_PW_FILE}.config.yml localhost | sed 's/localhost | SUCCESS => //g' | jq .ansible_facts.rhn_user | sed 's/"//g')
+		RHN_USER=$(ansible -m include_vars -a ${VAULT_PW_FILE}.config.yml localhost | sed 's/localhost | SUCCESS => //g' | jq .ansible_facts.rhn_user | sed 's/"//g')
 		RHEL_POOL=$(ansible -m include_vars -a ${VAULT_PW_FILE}.config.yml localhost | sed 's/localhost | SUCCESS => //g' | jq .ansible_facts.rhel_pool.__ansible_vault | sed 's/"//g;s/\\n/\n/g' | ansible-vault decrypt --vault-password-file ${VAULT_PW_FILE} 2>/dev/null)
 		OPENSTACK_POOL=$(ansible -m include_vars -a ${VAULT_PW_FILE}.config.yml localhost | sed 's/localhost | SUCCESS => //g' | jq .ansible_facts.openstack_pool.__ansible_vault | sed 's/"//g;s/\\n/\n/g' | ansible-vault decrypt --vault-password-file ${VAULT_PW_FILE} 2>/dev/null)
+		REGISTRY_USER=$(ansible -m include_vars -a ${VAULT_PW_FILE}.config.yml localhost | sed 's/localhost | SUCCESS => //g' | jq .ansible_facts.registry_user | sed 's/"//g')
 	fi
 fi
 
@@ -183,6 +187,53 @@ then
 	OPENSTACK_POOL=${RHEL_POOL}
 fi
 
+echo ""
+echo "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
+echo ""
+echo "Openstack versions 15+ require access to redhat.registry.io when"
+echo "pulling containers for the Undercloud and Overcloud. You can use"
+echo "your portal credentials to pull this data, however, it's not recommended"
+echo "as this information needs to be written to a YAML file as part of the"
+echo "installation procedure."
+echo ""
+echo "You can create registry only credentials by logging into the RHN Portal"
+echo "and visiting the following URL:"
+echo ""
+echo "https://access.redhat.com/terms-based-registry/"
+echo ""
+echo "You will next be prompted asking for these credentials. If you leave"
+echo "them blank, your RHN Portal credentials will be used instead. If you"
+echo "intend to create them later, enter false information into these prompts"
+echo "now and you can always update the data later in this file:"
+echo ""
+echo "  ${RH_INSTALL_LOCAL_DIR}"
+echo ""
+echo "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
+
+USER_INPUT=""
+read -p "[Openstack] Enter Registry User for ${REGISTRY_HOSTNAME} [${REGISTRY_USER}]: " USER_INPUT
+if [[ -z "${USER_INPUT}" ]]
+then
+	USER_INPUT=${REGISTRY_USER}
+fi
+
+if [[ -z "${REGISTRY_USER}" ]]
+then
+	REGISTRY_USER=${RHN_USER}
+fi
+
+USER_INPUT=""
+read -p "[Openstack] Enter Registry User Password for ${REGISTRY_HOSTNAME} [${REGISTRY_PASSWORD}]: " USER_INPUT
+if [[ -z "${USER_INPUT}" ]]
+then
+	USER_INPUT=${REGISTRY_PASSWORD}
+fi
+
+if [[ -z "${REGISTRY_PASSWORD}" ]]
+then
+	REGISTRY_USER=${RHN_PASSWORD}
+fi
+
 sudo mkdir -p ${RH_INSTALL_LOCAL_DIR}
 sudo chown -R awx:awx ${RH_INSTALL_LOCAL_DIR}
 
@@ -191,10 +242,13 @@ RESULT=$(CREATE_CREDENTIAL "${TOWER_ORG}" "${CRED_RH_INSTALLER_VAULT_NAME}" "Vau
 
 LOG "stdout" "Storing encrypted data in ${RH_INSTALL_LOCAL_DIR}/config.yml"
 echo ""
-echo "rhn_user: darin.sorrentino" | sudo tee ${RH_INSTALL_LOCAL_DIR}/config.yml
+echo "rhn_user: ${RHN_USER}" | sudo tee ${RH_INSTALL_LOCAL_DIR}/config.yml
 echo -n "${RHN_PASSWORD}" | ansible-vault encrypt_string --vault-password-file ${VAULT_PW_FILE} --stdin-name 'rhn_password' | sudo tee -a ${RH_INSTALL_LOCAL_DIR}/config.yml
 echo -n "${RHEL_POOL}" | ansible-vault encrypt_string --vault-password-file ${VAULT_PW_FILE} --stdin-name 'rhel_pool' | sudo tee -a ${RH_INSTALL_LOCAL_DIR}/config.yml
 echo -n "${OPENSTACK_POOL}" | ansible-vault encrypt_string --vault-password-file ${VAULT_PW_FILE} --stdin-name 'openstack_pool' | sudo tee -a ${RH_INSTALL_LOCAL_DIR}/config.yml
+echo "registry_hostname: ${REGISTRY_HOSTNAME}" | sudo tee -a ${RH_INSTALL_LOCAL_DIR}/config.yml
+echo "registry_user: ${REGISTRY_USER}" | sudo tee -a ${RH_INSTALL_LOCAL_DIR}/config.yml
+echo -n "${REGISTRY_PASSWORD}" | ansible-vault encrypt_string --vault-password-file ${VAULT_PW_FILE} --stdin-name 'registry_password' | sudo tee -a ${RH_INSTALL_LOCAL_DIR}/config.yml
 
 sudo mv ${VAULT_PW_FILE} ${RH_INSTALL_LOCAL_DIR}/vault_rhn_pw.txt
 sudo chmod 0600 ${RH_INSTALL_LOCAL_DIR}/vault_rhn_pw.txt

@@ -29,6 +29,11 @@
         group: "{{ uc_user }}"
         mode: 0644
         remote_src: yes
+    - name: Add registry authentication to containers-prepare-parameter.yaml in templates directory (OSP Version {{ osp_version }} >= 14)
+      shell: |
+        echo "  ContainerImageRegistryCredentials:" | tee -a /home/{{ uc_user }}/templates/containers-prepare-parameter.yaml
+        echo "    {{ registry_hostname }}:" | tee -a /home/{{ uc_user }}/templates/containers-prepare-parameter.yaml
+        echo "      {{ registry_user }}: {{ registry_password }}" | tee -a /home/{{ uc_user }}/templates/containers-prepare-parameter.yaml
     - name: Add container image preparation file to undercloud.conf (OSP Version {{ osp_version }} >= 14)
       shell: |
         crudini --set /home/{{ uc_user }}/undercloud.conf DEFAULT container_images_file /home/{{ uc_user }}/templates/containers-prepare-parameter.yaml
