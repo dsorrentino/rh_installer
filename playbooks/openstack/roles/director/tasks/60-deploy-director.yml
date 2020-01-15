@@ -11,18 +11,10 @@
   register: undercloud_test
   become: yes
   become_user: "{{ uc_user }}"
-- name: Deploy director (if not deployed) (OSP Version {{ osp_version }} <= 14)
+- name: Deploy director (if not deployed)
   shell: |
          cd /home/{{ uc_user }}/
          openstack undercloud install
   become: yes
   become_user: "{{ uc_user }}"
-  when: undercloud_test.stdout != '0' and osp_version <= 14
-- name: Deploy director (if not deployed) (OSP Version {{ osp_version }} >= 15)
-  shell: |
-         cd /home/{{ uc_user }}/
-         echo '{{ rhn_password }}' | podman login -u {{ rhn_user }} --password-stdin https://registry.redhat.io
-         openstack undercloud install
-  become: yes
-  become_user: "{{ uc_user }}"
-  when: undercloud_test.stdout != '0' and osp_version >= 15
+  when: undercloud_test.stdout != '0'
