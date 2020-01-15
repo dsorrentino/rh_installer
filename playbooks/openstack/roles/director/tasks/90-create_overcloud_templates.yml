@@ -100,6 +100,7 @@
   block:
     - name: Copy fixed-ip-vips if needed (OSP Version {{ osp_version }} >= 13)
       copy:
+        remote_src: true
         src: "{{ tripleo_heat_templates }}/environments/fixed-ip-vips.yaml"
         dest: "{{ stack_templates }}/environments/fixed-ip-vips.yaml"
       with_items: "{{ networks }}"
@@ -262,6 +263,7 @@
       when: item.network  == "External"
     - name: Copy over the desired nic-configs (OSP Version {{ osp_version }} <= 12)
       copy:
+        remote_src: true
         src: "{{ tripleo_heat_templates }}/network/config/{{ nic_configs }}"
         dest: "{{ stack_templates }}/network/config/"
   when: osp_version <= 12
@@ -497,6 +499,7 @@
   when: custom_isolation.stat.exists and custom_roles.stat.exists and item.custom_role == "True" and osp_version <= 12
 - name: Copy YAML files for TLS configuration if using TLS
   copy:
+    remote_src: true
     src: "{{ tripleo_heat_templates }}/{{ item }}"
     dest: "{{ stack_templates }}/{{ item }}"
   with_items: 
