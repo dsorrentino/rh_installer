@@ -38,6 +38,8 @@
 - name: Check if the dns_nameserver is set
   shell: source ~/stackrc; openstack subnet show {{ neutron_subnet.stdout }} -c dns_nameservers -f value
   register: configured_dns
+  become: yes
+  become_user: "{{ uc_user }}"
 - name: Get undercloud nameserver
   shell: egrep ^nameserver /etc/resolv.conf | head -1 | awk '{print $NF}'
   register: undercloud_nameserver
