@@ -288,7 +288,7 @@
       state: present
       section: DEFAULT
       option: undercloud_ntp_servers
-      value: "{{ ntp_server }}"
+      value: "{{ director_ntp_server }}"
     become: yes
   - name: Configure undercloud.conf - Set default admin password
     ini_file:

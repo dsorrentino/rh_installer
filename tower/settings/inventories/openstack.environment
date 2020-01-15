@@ -40,6 +40,8 @@ director_provisioning_dhcp_end: 192.168.200.200
 # introspection of the nodes
 director_provisioning_introspection_start: 192.168.200.20
 director_provisioning_introspection_end: 192.168.200.99
+# This is the NTP server for Director to use
+director_ntp_server: 0.pool.ntp.org
 # This is the MTU of the PXE network NIC identified above
 director_provisioning_mtu: 8946
 # This is the local IP network of the Director on the PXE Network
