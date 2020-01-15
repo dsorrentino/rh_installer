@@ -7,3 +7,4 @@
 - include: 60-deploy-director.yml
 - include: 70-post-deploy-director.yml
 - include: 80-configure_container_registry.yml
+- include: 90-create_overcloud_templates.yml
