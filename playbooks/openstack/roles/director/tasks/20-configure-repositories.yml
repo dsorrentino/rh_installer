@@ -28,4 +28,14 @@
     - ansible-2.8-for-rhel-8-x86_64-rpms
     - openstack-{{ osp_version }}-for-rhel-8-x86_64-rpms
     - fast-datapath-for-rhel-8-x86_64-rpms
-  when: osp_version >= 15 and ansible_facts['cmdline']['BOOT_IMAGE'] is search('vmlinuz-4')
+  when: osp_version >= 15 and os_version != osp_beta_version and ansible_facts['cmdline']['BOOT_IMAGE'] is search('vmlinuz-4')
+- name: Configure Openstack Repositories - Version BETA (OSP Version {{ osp_beta_version }}) (RHEL8)
+  rhsm_repository:
+    name: "{{ item }}"
+    state: enabled
+  with_items:
+    - rhel-8-for-x86_64-highavailability-rpms
+    - ansible-2.8-for-rhel-8-x86_64-rpms
+    - openstack-beta-for-rhel-8-x86_64-rpms
+    - fast-datapath-for-rhel-8-x86_64-rpms
+  when: osp_version == osp_beta_version and ansible_facts['cmdline']['BOOT_IMAGE'] is search('vmlinuz-4')

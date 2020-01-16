@@ -4,7 +4,7 @@
 #
 ################################################
 # This is the version of RHOSP to pass
-osp_version: 13
+osp_version: 16
 # These are the undercloud/director linux credentials
 uc_user: stack
 uc_pass: stack
