@@ -36,4 +36,4 @@
   shell: |
     export URL=ftp://partners.redhat.com/f0533d58c4961ffb2ee6b3877025e23b/rhel-8/Tools/x86_64/os/Packages
     sudo yum install -y $URL/python3-notario-0.0.16-2.el8cp.noarch.rpm $URL/ceph-ansible-4.0.5-1.el8cp.noarch.rpm
-  when: osp_version == 15 and not rhceph4_ga
+  when: osp_version == 16 and not rhceph4_ga

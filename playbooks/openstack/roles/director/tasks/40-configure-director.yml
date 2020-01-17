@@ -385,7 +385,7 @@
     lineinfile:
       path: /home/{{ uc_user }}/undercloud.conf
       state: present
-      regexp: "^#container_images_file = "
+      regexp: "^#container_images_file ="
       line: "container_images_file = /home/{{ uc_user }}/templates/containers-prepare-parameter.yaml"
     become: yes
     become_user: "{{ uc_user }}"
@@ -403,7 +403,7 @@
     lineinfile:
       path: /home/{{ uc_user }}/undercloud.conf
       state: present
-      regexp: "^#undercloud_nameservers = "
+      regexp: "^#undercloud_nameservers ="
       line: "undercloud_nameservers = {{ director_dns_servers }}"
     become: yes
     become_user: "{{ uc_user }}"
