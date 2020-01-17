@@ -6,6 +6,7 @@
     username: "{{ rhn_user }}"
     password: "{{ rhn_password }}"
     pool: "{{ openstack_pool }}"
+  become: yes
 - name: Configure Openstack Repositories - Version {{ osp_version }} (RHEL7)
   rhsm_repository:
     name: "{{ item }}"
@@ -14,11 +15,13 @@
     - rhel-ha-for-rhel-7-server-rpms
     - rhel-7-server-openstack-{{ osp_version }}-rpms
   when: osp_version <= 14 and ansible_facts['cmdline']['BOOT_IMAGE'] is search('vmlinuz-3')
+  become: yes
 - name: Configure Ceph Repositories - Version {{ osp_version }} (RHEL7)
   rhsm_repository:
     name: rhel-7-server-rhceph-3-tools-rpms
     state: enabled
   when: osp_version >= 13 and osp_version <= 14 and ansible_facts['cmdline']['BOOT_IMAGE'] is search('vmlinuz-3')
+  become: yes
 - name: Configure Openstack Repositories - Version {{ osp_version }} (RHEL8)
   rhsm_repository:
     name: "{{ item }}"
@@ -29,6 +32,12 @@
     - openstack-{{ osp_version }}-for-rhel-8-x86_64-rpms
     - fast-datapath-for-rhel-8-x86_64-rpms
   when: osp_version >= 15 and os_version != osp_beta_version and ansible_facts['cmdline']['BOOT_IMAGE'] is search('vmlinuz-4')
+  become: yes
+- name: Configure Ceph Repositories - Version {{ osp_version }} (RHEL8)
+  rhsm_repository:
+    name: rhceph-4-tools-for-rhel-8-x86_64-rpms
+    state: enabled
+  when: osp_version >= 15 and rhceph4_ga and ansible_facts['cmdline']['BOOT_IMAGE'] is search('vmlinuz-4')
 - name: Configure Openstack Repositories - Version BETA (OSP Version {{ osp_beta_version }}) (RHEL8)
   rhsm_repository:
     name: "{{ item }}"
@@ -39,3 +48,4 @@
     - openstack-beta-for-rhel-8-x86_64-rpms
     - fast-datapath-for-rhel-8-x86_64-rpms
   when: osp_version == osp_beta_version and ansible_facts['cmdline']['BOOT_IMAGE'] is search('vmlinuz-4')
+  become: yes
