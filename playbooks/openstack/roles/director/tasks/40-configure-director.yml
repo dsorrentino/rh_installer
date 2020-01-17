@@ -320,7 +320,8 @@
       state: present
       section: DEFAULT
       option: undercloud_ntp_servers
-      value: "{{ director_ntp_server }}"
+      value: "{{ director_ntp_servers }}"
+    when: director_ntp_servers != ""
     become: yes
     become_user: "{{ uc_user }}"
   - name: Configure undercloud.conf - Set default admin password
@@ -381,11 +382,32 @@
     become_user: "{{ uc_user }}"
     when: osp_version >= 14 and director_provisioning_mtu  > 1500
   - name: Configure undercloud.conf - container_images_file (OSP Version {{ osp_version }} >= 14)
-    shell: |
-      crudini --set /home/{{ uc_user }}/undercloud.conf DEFAULT container_images_file /home/{{ uc_user }}/templates/containers-prepare-parameter.yaml
+    lineinfile:
+      path: /home/{{ uc_user }}/undercloud.conf
+      state: present
+      regexp: "^#container_images_file = "
+      line: "container_images_file = /home/{{ uc_user }}/templates/containers-prepare-parameter.yaml"
     become: yes
     become_user: "{{ uc_user }}"
     when: osp_version >= 14
+  - name: Configure undercloud.conf - enabled_hardware_types (OSP Version {{ osp_version }} >= 13)
+    lineinfile:
+      path: /home/{{ uc_user }}/undercloud.conf
+      state: present
+      regexp: "^#enabled_hardware_types = "
+      line: "enabled_hardware_types = {{ director_hardware_types }}"
+    become: yes
+    become_user: "{{ uc_user }}"
+    when: osp_version >= 13 and director_hardware_types != ""
+  - name: Configure undercloud.conf - undercloud_nameservers
+    lineinfile:
+      path: /home/{{ uc_user }}/undercloud.conf
+      state: present
+      regexp: "^#undercloud_nameservers = "
+      line: "undercloud_nameservers = {{ director_dns_servers }}"
+    become: yes
+    become_user: "{{ uc_user }}"
+    when: director_dns_servers != ""
   - name: Extract overcloud images for later.
     shell: |
            cd /home/{{ uc_user }}/images
