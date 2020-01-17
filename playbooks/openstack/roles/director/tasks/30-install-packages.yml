@@ -15,17 +15,11 @@
     state: latest
   when: osp_version >= 15 and ansible_facts['cmdline']['BOOT_IMAGE'] is search('vmlinuz-4')
   become: yes
-- name: Install Ceph Ansible package (OSP Version {{ osp_version }} == 13/14) (RHEL7)
+- name: Install Ceph Ansible package (OSP Version {{ osp_version }} == 13/14/15)
   yum:
     name: ceph-ansible
     state: latest
-  when: osp_version >= 13 and ansible_facts['cmdline']['BOOT_IMAGE'] is search('vmlinuz-3')
-  become: yes
-- name: Install Ceph Ansible package (OSP Version {{ osp_version }} >= 15) (RHEL8)
-  yum:
-    name: ceph-ansible
-    state: latest
-  when: osp_version >= 15 and rhceph4_ga
+  when: osp_version >= 13 and osp_version <= 15
   become: yes
 - name: Install Director Image Packages for the Overcloud and some configuration tooling
   yum:
@@ -38,8 +32,8 @@
       - libguestfs-tools
       - crudini
   become: yes
-- name: Install Ceph Ansible workaround for pre-GA Ceph 4 (OSP Version {{ osp_version }} >= 15)
+- name: Install Ceph Ansible workaround for pre-GA Ceph 4 (OSP Version {{ osp_version }} >= 16)
   shell: |
     export URL=ftp://partners.redhat.com/f0533d58c4961ffb2ee6b3877025e23b/rhel-8/Tools/x86_64/os/Packages
     sudo yum install -y $URL/python3-notario-0.0.16-2.el8cp.noarch.rpm $URL/ceph-ansible-4.0.5-1.el8cp.noarch.rpm
-  when: osp_version >= 15 and not rhceph4_ga
+  when: osp_version == 15 and not rhceph4_ga
