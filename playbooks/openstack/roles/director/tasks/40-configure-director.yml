@@ -338,10 +338,10 @@
       path: /home/{{ uc_user }}/undercloud.conf
       state: present
       regexp: "^#clean_nodes = "
-      line: "clean_nodes = true"
+      line: "clean_nodes = {{ enable_node_cleaning }}"
     become: yes
     become_user: "{{ uc_user }}"
-    when: osp_version >= 14 and enable_node_cleaning
+    when: osp_version >= 14
   - name: Configure undercloud.conf - local_subnet (OSP Version {{ osp_version }} >= 14)
     lineinfile:
       path: /home/{{ uc_user }}/undercloud.conf
