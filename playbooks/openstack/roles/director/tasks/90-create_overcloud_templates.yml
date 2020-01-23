@@ -531,6 +531,14 @@
   when: custom_isolation.stat.exists == True and osp_version <= 12
   become: yes
   become_user: "{{ uc_user }}"
+- name: Update relative paths for storage-environment (OSP Version {{ osp_version }} >= 15)
+  replace:
+    path: "{{ stack_templates }}/environments/storage-environment.yaml"
+    regexp: '\.\.\/deployment'
+    replace: "{{ tripleo_heat_templates }}/deployment"
+  when: osp_version >= 15
+  become: yes
+  become_user: "{{ uc_user }}"
 - name: Create flavors for custom roles (if needed)
   shell: |
          source ~/stackrc >/dev/null 2>&1
