@@ -757,6 +757,22 @@
     mode: u+rwx,g+rx,o+rx
   become: yes
   become_user: "{{ uc_user }}"
+- name: Check if we are need to include the containers file (OSP Version {{ osp_version }} >= 13)
+  stat:
+    path: "{{ stack_templates }}/containers-prepare-parameter.yaml"
+  register: containers_prepare
+  become: yes
+  become_user: "{{ uc_user }}"
+- name: Add containers-prepare-parameter.yaml the overcloud-deploy.sh (OSP Version {{ osp_version }} >= 13)
+  lineinfile:
+    path: "{{ deploy_script }}"
+    state: present
+    line: "  -e {{ stack_templates }}/containers-prepare-parameter.yaml \\"
+    regexp: ".*  -e {{ stack_templates }}/containers-prepare-parameter.yaml \\.*"
+    insertafter: '.*node-info.yaml.*'
+  when: containers_prepare.stat.exists and osp_version >= 13
+  become: yes
+  become_user: "{{ uc_user }}"
 - name: Add VIP Template to the overcloud-deploy.sh (OSP Version {{ osp_version }} >= 13)
   lineinfile:
     path: "{{ deploy_script }}"
