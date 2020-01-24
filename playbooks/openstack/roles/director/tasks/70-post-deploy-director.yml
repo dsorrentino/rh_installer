@@ -56,3 +56,21 @@
   when: configured_dns == "" and neutron_nameserver != "undercloud"
   become: yes
   become_user: "{{ uc_user }}"
+- name: Configure chronyd to allow connections from the control-plane network
+  lineinfile:
+    path: "/etc/chrony.conf"
+    state: present
+    line: "allow {{ director_provisioning_network }}"
+    regexp: "allow {{ director_provisioning_network }}"
+  when: director_local_ip == ntp_server
+  become: yes
+- name: Remove the lines in chrony.conf preventing overcloud nodes from connecting
+  lineinfile:
+    path: "/etc/chrony.conf"
+    state: absent
+    regexp: "^{{ item }}.*$"
+  with_items:
+    - bindcmdaddress
+    - deny
+  when: director_local_ip == ntp_server
+  become: yes
