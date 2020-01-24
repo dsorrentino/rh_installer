@@ -116,11 +116,11 @@ nodes:
 # into the control plane to reduce the number of networks.  You can, however, use this project to
 # create the default templates, modify them as needed and then deploy the Overcloud.
 networks:
-    - { network: "InternalApi", cidr: "192.168.130.0/24", vlan: "130", pool: "[{'start': '192.168.130.20', 'end': '192.168.130.200'}]", static_vip: "True", vip: 192.168.130.10, default_route: '' }
-    - { network: "Storage", cidr: "192.168.140.0/24", vlan: "140", pool: "[{'start': '192.168.140.20', 'end': '192.168.140.200'}]", static_vip: "True", vip: 192.168.140.10, default_route: '' }
-    - { network: "StorageMgmt", cidr: "192.168.150.0/24", vlan: "150", pool: "[{'start': '192.168.150.20', 'end': '192.168.150.200'}]", static_vip: "True", vip: 192.168.150.10, default_route: '' }
-    - { network: "Tenant", cidr: "192.168.170.0/24", vlan: "170", pool: "[{'start': '192.168.170.20', 'end': '192.168.170.200'}]", static_vip: "False", vip: '', default_route: '' }
-    - { network: "External", cidr: "192.168.120.0/24", vlan: "120", pool: "[{'start': '192.168.120.20', 'end': '192.168.120.100'}]", static_vip: "True", vip: 192.168.120.10, default_route: 192.168.120.1 }
+    - { network: "InternalApi", cidr: "192.168.30.0/24", vlan: "30", pool: "[{'start': '192.168.30.20', 'end': '192.168.30.200'}]", static_vip: "True", vip: 192.168.30.10, default_route: '' }
+    - { network: "Storage", cidr: "192.168.40.0/24", vlan: "40", pool: "[{'start': '192.168.40.20', 'end': '192.168.40.200'}]", static_vip: "True", vip: 192.168.40.10, default_route: '' }
+    - { network: "StorageMgmt", cidr: "192.168.50.0/24", vlan: "50", pool: "[{'start': '192.168.50.20', 'end': '192.168.50.200'}]", static_vip: "True", vip: 192.168.50.10, default_route: '' }
+    - { network: "Tenant", cidr: "192.168.70.0/24", vlan: "70", pool: "[{'start': '192.168.70.20', 'end': '192.168.70.200'}]", static_vip: "False", vip: '', default_route: '' }
+    - { network: "External", cidr: "192.168.20.0/24", vlan: "20", pool: "[{'start': '192.168.20.20', 'end': '192.168.20.100'}]", static_vip: "True", vip: 192.168.20.10, default_route: 192.168.20.1 }
 # DNS Servers to be used in the Overcloud
 dns_servers: '["172.16.225.254"]'
 # NTP server to be used by the Overcloud.
