@@ -41,7 +41,7 @@
       shell: | 
         sed -i 's/registry.redhat.io\/rhosp{{ osp_version }}/registry.redhat.io\/rhosp-beta/g' /home/{{ uc_user }}/templates/containers-prepare-parameter.yaml
         sed -i 's/ceph_namespace: docker-registry.upshift.redhat.com\/ceph/ceph_namespace: registry.redhat.io\/rhceph-beta/g' /home/{{ uc_user }}/templates/containers-prepare-parameter.yaml
-        sed -i 's/ceph_image: rhceph-4.0-rhel8/ceph_image: rhceph-4-rhel8/g' /home/{{ uc_user }}/templates/containers-prepare-parameter.yaml
+        sed -i 's/ceph_image: rhceph-4.0-rhel8/ceph_image: {{ ceph-image }}/g' /home/{{ uc_user }}/templates/containers-prepare-parameter.yaml
         sed -i "/push_destination: true/a\    excludes:\n      - grafana" /home/{{ uc_user }}/templates/containers-prepare-parameter.yaml
       when: osp_version == osp_beta_version and osp_version == 16
   when: osp_version >= 14
