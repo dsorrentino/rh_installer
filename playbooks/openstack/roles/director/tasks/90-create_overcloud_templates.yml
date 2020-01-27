@@ -81,6 +81,12 @@
   with_items: "{{ find_results.files }}"
   become: yes
   become_user: "{{ uc_user }}"
+- name: Remove existing roles_data.yaml if it exists
+  file:
+    path: "{{ stack_templates }}/roles_data.yaml"
+    state: absent
+  become: yes
+  become_user: "{{ uc_user }}"
 - name: Create individual roles templates in {{ stack_templates }}/roles
   shell: | 
     #!/bin/bash
