@@ -171,8 +171,13 @@ ceph_osd_pool_default_size: 3
 ceph_osd_pool_default_min_size: 2
 ceph_osd_pool_default_pg_num: 128
 ceph_osd_pool_default_pgp_num: 128
+# Which scenario to use for the deployment, lvm or collocated
+ceph_osd_scenario: lvm
+# Which type of object store to use, bluestore or filestore
+ceph_osd_objectstore: bluestore
+# Describe the disk layout of the Ceph OSDs
 ceph_disks:
-    - { osd: '/dev/vdb', journal: '' } # Null journal indicates co-located
+    - { osd: '/dev/sdb', journal: '' } # Null journal indicates co-located
 ################################################
 #
 # Overcloud Services Configuration

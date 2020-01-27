@@ -927,6 +927,7 @@
     echo "    osd_pool_default_pg_num: {{ ceph_osd_pool_default_pg_num }}" >>${CEPH_CUSTOM_CONFIG}
     echo "    osd_pool_default_pgp_num: {{ ceph_osd_pool_default_pgp_num }}" >>${CEPH_CUSTOM_CONFIG}
     echo "  CephAnsibleDisksConfig:" >>${CEPH_CUSTOM_CONFIG}
+    echo "    osd_objectstore: {{ ceph_osd_objectstore }}" >>${CEPH_CUSTOM_CONFIG}
     echo "    dmcrypt: {{ ceph_encrypt_osd }}" >>${CEPH_CUSTOM_CONFIG}
   when: include_ceph and ceph_deployment == 'director' and osp_version >= 13
   become: yes
@@ -937,12 +938,20 @@
     CEPH_CUSTOM_CONFIG={{ stack_templates }}/ceph-custom-config.yaml
     OSD={{ item.osd }}
     JOURNAL={{ item.journal }}
-    if [[ ! -z "{{ item.journal }}" && -z "$(grep "    osd_scenario: non-collocated" ${CEPH_CUSTOM_CONFIG})" ]]
+    if [[ -z "$(grep "    osd_scenario: .*$" ${CEPH_CUSTOM_CONFIG})" ]]
     then
-      echo "    osd_scenario: non-collocated" >>${CEPH_CUSTOM_CONFIG}
-    elif [[ -z "{{ item.journal }}" && -z "$(grep "    osd_scenario: collocated" ${CEPH_CUSTOM_CONFIG})" ]]
-    then
-      echo "    osd_scenario: collocated" >>${CEPH_CUSTOM_CONFIG}
+      if [[ ! -z "{{ item.journal }}" ]]
+      then
+        echo "    osd_scenario: non-collocated" >>${CEPH_CUSTOM_CONFIG}
+      elif [[ -z "{{ item.journal }}" ]]
+      then
+        if [[ "{{ ceph_osd_objectstore }}" == "bluestore" ]]
+        then
+          echo "    osd_scenario: lvm" >>${CEPH_CUSTOM_CONFIG}
+        else
+          echo "    osd_scenario: collocated" >>${CEPH_CUSTOM_CONFIG}
+        fi
+      fi
     fi
     if [[ -z "$(grep "    devices:" ${CEPH_CUSTOM_CONFIG})" ]]
     then
@@ -1228,5 +1237,15 @@
     sed -i '/ANSIBLE/d' {{ item }}
   with_items:
     - "{{ deploy_script }}"
+  become: yes
+  become_user: "{{ uc_user }}"
+- name: Add ceph configuration to support Beta deployment of Ceph (OSP Version {{ osp_version }} == 16)
+  lineinfile:
+    path: "{{ stack_templates }}/ceph-custom-config.yaml"
+    state: present
+    line: "  EnableRhcs4Beta: true"
+    regexp: ".*EnableRhcs4Beta: true.*"
+    insertafter: '^parameter_defaults:.*'
+  when: osp_version == 16 and not rhceph4_ga
   become: yes
   become_user: "{{ uc_user }}"
