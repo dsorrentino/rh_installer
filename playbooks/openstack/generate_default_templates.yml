@@ -5,6 +5,6 @@
   vars:
     rhn_installer_local_config: /var/lib/awx/projects/rh_installer.local/config.yml
   include_vars:
-    - roles/director/vars/main.yml
+    file: roles/director/vars/main.yml
   include_tasks:
-    - roles/director/tasks/90-create_overcloud_templates.yml
+    file: roles/director/tasks/90-create_overcloud_templates.yml
