@@ -101,10 +101,10 @@ nic_configs: bond-with-vlans
 # This is where the nodes in the Overcloud are defined. For the most part, you'll want to
 # change the count of each of the roles to match what you're deploying.
 nodes:
-    - { count_parameter: "ControllerCount", flavor_parameter: "OvercloudControllerFlavor", flavor: "control", count: 1, custom_role: "False" }
-    - { count_parameter: "ComputeCount", flavor_parameter: "OvercloudComputeFlavor", flavor: "compute", count: 1, custom_role: "False" }
-    - { count_parameter: "CephStorageCount", flavor_parameter: "OvercloudCephStorageFlavor", flavor: "ceph-storage", count: 0, custom_role: "False" }
-    - { count_parameter: "ComputeOsdCount", flavor_parameter: "OvercloudComputeOsdFlavor", flavor: "computeosd", count: 0, custom_role: "True", role_combine: "Compute,CephStorage" }
+    - { role_name: "Controller", flavor: "control", count: 1 }
+    - { role_name: "Compute", flavor: "compute", count: 1 }
+    - { role_name: "CephStorage", flavor: "ceph-storage", count: 0 }
+    - { role_name: "ComputeHCI", flavor: "computeosd", count: 0 }
 ################################################
 #
 # Overcloud Network Configuration

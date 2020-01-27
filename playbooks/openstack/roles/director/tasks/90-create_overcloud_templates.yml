@@ -17,6 +17,7 @@
   with_items:
     - "{{ stack_templates }}"
     - "{{ stack_templates }}/environments"
+    - "{{ stack_templates }}/roles"
     - "{{ stack_templates }}/network/config/{{ nic_configs }}"
   become: yes
   become_user: "{{ uc_user }}"
@@ -28,10 +29,14 @@
   become: yes
   become_user: "{{ uc_user }}"
 - name: Configure the flavors for the nodes in node-info.yaml
-  lineinfile:
-    path: "{{ stack_templates }}/node-info.yaml"
-    regexp: "{{ item.flavor_parameter }}"
-    line: "  {{ item.flavor_parameter }}: {{ item.flavor }}"
+  shell: |
+    #!/bin/bash
+    FLAVOR_PARAMETER="{{ item.role_name }}Flavor"
+    if [[ ! -z "$(grep 'uses_deprecated_params: True' {{ stack_templates }}/roles/{{ item.role_name }}.yaml)" ]]
+    then
+      FLAVOR_PARAMETER=$(grep deprecated_param_flavor: {{ stack_templates }}/roles/{{ item.role_name }}.yaml | awl '{print $NF}' | sed "s/'//g")
+    fi
+    echo "  ${FLAVOR_PARAMETER}: {{ item.flavor }}" >>{{ stack_templates }}/node-info.yaml
   with_items: "{{ nodes }}"
   when: item.count > 0
   become: yes
@@ -39,8 +44,8 @@
 - name: Configure the count for the nodes in node-info.yaml
   lineinfile:
     path: "{{ stack_templates }}/node-info.yaml"
-    regexp: "{{ item.count_parameter }}"
-    line: "  {{ item.count_parameter }}: {{ item.count }}"
+    regexp: "{{ item.role_name }}Count"
+    line: "  {{ item.role_name }}Count: {{ item.count }}"
   with_items: "{{ nodes }}"
   when: item.count > 0
   become: yes
@@ -48,7 +53,7 @@
 - name: Clean out any entries where the count is now zero
   lineinfile:
     path: "{{ stack_templates }}/node-info.yaml"
-    regexp: "({{ item.count_parameter }}|{{ item.flavor_parameter }})"
+    regexp: "({{ item.role_name }}Count|{{ item.role_name }}Flavor)"
     state: absent
   with_items: "{{ nodes }}"
   when: item.count == 0
@@ -76,22 +81,17 @@
   with_items: "{{ find_results.files }}"
   become: yes
   become_user: "{{ uc_user }}"
-- name: Copy roles_data.yaml if doing custom roles
-  copy:
-    remote_src: true
-    src: "{{ tripleo_heat_templates }}/roles_data.yaml"
-    dest: "{{ stack_templates }}"
-    force: true
-    owner: "{{ uc_user }}"
-    group: "{{ uc_user }}"
+- name: Create individual roles templates in {{ stack_templates }}/roles
+  shell: | 
+    #!/bin/bash
+    openstack overcloud roles generate -o {{ stack_templates }}/roles/{{ item.role_name }}.yaml {{ item.role_name }}
   with_items: "{{ nodes }}"
-  when: undercloud_deployed and item.custom_role == "True" and item.count != 0
   become: yes
   become_user: "{{ uc_user }}"
-- name: Check if we are using a custom roles_data.yaml
-  stat:
-    path: "{{ stack_templates }}/roles_data.yaml"
-  register: custom_roles
+- name: Assemble roles_data.yaml
+  assemble:
+    src: "/home/{{ uc_user }}/templates/roles/"
+    dest: "{{ stack_templates }}/templates/roles_data.yaml"
   become: yes
   become_user: "{{ uc_user }}"
 - name: Set default count for all roles to 0 (if needed)
@@ -99,29 +99,21 @@
     path: "{{ stack_templates }}/roles_data.yaml"
     regexp: 'CountDefault: 1'
     replace: "CountDefault: 0"
-  when: custom_roles.stat.exists 
   become: yes
   become_user: "{{ uc_user }}"
-- name: Update roles_data (if needed)
+- name: Create flavors for custom roles (if needed)
   shell: |
-    WORK_FILE=$(mktemp)
-    ROLE_NAME=$(echo "{{ item.count_parameter }}" | sed 's/Count$//g')
-    ROLES=$(echo {{ item.role_combine }} | sed 's/,/ /g')
-    for ROLE in ${ROLES}
-    do
-      sed -n "/- name: ${ROLE}/,/^ *$/p" {{ stack_templates }}/roles_data.yaml > ${WORK_FILE}.${ROLE}
-    done
-    echo "" >> {{ stack_templates }}/roles_data.yaml
-    echo "- name: ${ROLE_NAME}" >>{{ stack_templates }}/roles_data.yaml
-    echo "  CountDefault: 0" >>{{ stack_templates }}/roles_data.yaml
-    echo "  ServicesDefault:" >>{{ stack_templates }}/roles_data.yaml
-    cat ${WORK_FILE}.* | grep 'OS::' | sort -u >>{{ stack_templates }}/roles_data.yaml
-    echo "" >> {{ stack_templates }}/roles_data.yaml
-    rm -f ${WORK_FILE}*
+    #!/bin/bash
+    source ~/stackrc >/dev/null 2>&1
+    if [[ -z "$(openstack flavor list -c Name -f value | grep {{ item.flavor }})" ]]
+    then
+      openstack flavor create --ram 4096 --disk 40 --vcpus 1 --public {{ item.flavor }}
+      openstack flavor set --property "cpu_arch"="x86_64" --property "capabilities:boot_option"="local" --property "capabilities:profile"="{{ item.flavor }}" {{ item.flavor }}
+    fi
   with_items: "{{ nodes }}"
-  when: custom_roles.stat.exists and item.custom_role == "True"
   become: yes
   become_user: "{{ uc_user }}"
+
 - name: Perform specific configuration for OSP Version 13+ (OSP Version {{ osp_version }} >= 13)
   block:
     - name: Copy fixed-ip-vips if needed (OSP Version {{ osp_version }} >= 13)
@@ -539,68 +531,6 @@
   when: osp_version >= 15
   become: yes
   become_user: "{{ uc_user }}"
-- name: Create flavors for custom roles (if needed)
-  shell: |
-         source ~/stackrc >/dev/null 2>&1
-         if [[ -z "$(openstack flavor list -c Name -f value | grep {{ item.flavor }})" ]]
-         then
-           openstack flavor create --ram 4096 --disk 40 --vcpus 1 --public {{ item.flavor }}
-           openstack flavor set --property "cpu_arch"="x86_64" --property "capabilities:boot_option"="local" --property "capabilities:profile"="computeosd" computeosd
-         fi
-  with_items: "{{ nodes }}"
-  when: undercloud_deployed and custom_roles.stat.exists and item.custom_role == "True"
-  become: yes
-  become_user: "{{ uc_user }}"
-- name: Update network-isolation ports (if needed) (OSP Version {{ osp_version }} <= 12)
-  shell: |
-    WORK_FILE=$(mktemp)
-    ROLE_NAME=$(echo "{{ item.count_parameter }}" | sed 's/Count$//g')
-    ROLES=$(echo {{ item.role_combine }} | sed 's/,/ /g')
-    for ROLE in ${ROLES}
-    do
-      grep "${ROLE}::Ports" {{ stack_templates }}/environments/network-isolation.yaml | grep -v "^ *#">> ${WORK_FILE}
-    done
-    echo "" >>{{ stack_templates }}/environments/network-isolation.yaml
-    echo "  # Port assignments for the ${ROLE_NAME} role" >>{{ stack_templates }}/environments/network-isolation.yaml
-    for PORT_TYPE in $(cat ${WORK_FILE} | awk '{print $1}' | awk -F: '{print $9}' | sort -u)
-    do
-      PORT_FILE=""
-      PORT_FILE=$(grep ${PORT_TYPE} ${WORK_FILE} | grep -v noop.yaml | head -1 | awk '{print $NF}' )
-      if [[ -z "${PORT_FILE}" ]]
-      then
-        PORT_FILE=$(grep ${PORT_TYPE} ${WORK_FILE} | grep noop.yaml | head -1 | awk '{print $NF}' )
-      fi
-      echo "  OS::TripleO::${ROLE_NAME}::Ports::${PORT_TYPE}: ${PORT_FILE}" >>{{ stack_templates }}/environments/network-isolation.yaml
-    done
-  with_items: "{{ nodes }}"
-  when: custom_isolation.stat.exists and custom_roles.stat.exists and item.custom_role == "True" and osp_version <= 12
-  become: yes
-  become_user: "{{ uc_user }}"
-- name: Update network-environment ports (if needed) (OSP Version {{ osp_version }} <= 12)
-  shell: |
-    WORK_FILE=$(mktemp)
-    ROLE_NAME=$(echo "{{ item.count_parameter }}" | sed 's/Count$//g')
-    ROLES=$(echo {{ item.role_combine }} | sed 's/,/ /g')
-    for ROLE in ${ROLES}
-    do
-      grep "${ROLE}::Ports" {{ stack_templates }}/environments/network-isolation.yaml | grep -v "^ *#">> ${WORK_FILE}
-    done
-    echo "" >>{{ stack_templates }}/environments/network-isolation.yaml
-    echo "  # Port assignments for the ${ROLE_NAME} role" >>{{ stack_templates }}/environments/network-isolation.yaml
-    for PORT_TYPE in $(cat ${WORK_FILE} | awk '{print $1}' | awk -F: '{print $9}' | sort -u)
-    do
-      PORT_FILE=""
-      PORT_FILE=$(grep ${PORT_TYPE} ${WORK_FILE} | grep -v noop.yaml | head -1 | awk '{print $NF}' )
-      if [[ -z "${PORT_FILE}" ]]
-      then
-        PORT_FILE=$(grep ${PORT_TYPE} ${WORK_FILE} | grep noop.yaml | head -1 | awk '{print $NF}' )
-      fi
-      echo "  OS::TripleO::${ROLE_NAME}::Ports::${PORT_TYPE}: ${PORT_FILE}" >>{{ stack_templates }}/environments/network-isolation.yaml
-    done
-  with_items: "{{ nodes }}"
-  when: custom_isolation.stat.exists and custom_roles.stat.exists and item.custom_role == "True" and osp_version <= 12
-  become: yes
-  become_user: "{{ uc_user }}"
 - name: Copy YAML files for TLS configuration if using TLS
   copy:
     remote_src: true
@@ -789,12 +719,11 @@
   when: osp_version <= 12
   become: yes
   become_user: "{{ uc_user }}"
-- name: Add roles_data.yaml if doing custom roles
+- name: Add roles_data.yaml
   lineinfile:
     path: "{{ deploy_script }}"
     insertafter: openstack overcloud deploy
     line: '  -r {{ stack_templates }}/roles_data.yaml \'
-  when: custom_roles.stat.exists 
   become: yes
   become_user: "{{ uc_user }}"
 - name: Add Ironic YAML's to {{ deploy_script }} (if needed) (OSP Version {{ osp_version }} <= 13)
