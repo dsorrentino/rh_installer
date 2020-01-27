@@ -757,7 +757,7 @@
     mode: u+rwx,g+rx,o+rx
   become: yes
   become_user: "{{ uc_user }}"
-- name: Add VIP Template to the overcloud-deploy.sh (OSP Version {{ osp_version }} >= 13)
+- name: Add VIP Template to the {{ deploy_script }} (OSP Version {{ osp_version }} >= 13)
   lineinfile:
     path: "{{ deploy_script }}"
     state: present
@@ -768,7 +768,7 @@
   when: item.static_vip and osp_version >= 13
   become: yes
   become_user: "{{ uc_user }}"
-- name: Add network_data.yaml to the overcloud-deploy.sh (OSP Version {{ osp_version }} >= 13)
+- name: Add network_data.yaml to the {{ deploy_script }} (OSP Version {{ osp_version }} >= 13)
   lineinfile:
     path: "{{ deploy_script }}"
     state: present
@@ -778,7 +778,7 @@
   when: osp_version >= 13
   become: yes
   become_user: "{{ uc_user }}"
-- name: Add Fernet YAML's to overcloud-deploy.sh (if needed) (OSP Version {{ osp_version }} <= 12)
+- name: Add Fernet YAML's to {{ deploy_script }} (if needed) (OSP Version {{ osp_version }} <= 12)
   blockinfile:
     path: "{{ deploy_script }}"
     block: |2
@@ -791,13 +791,13 @@
   become_user: "{{ uc_user }}"
 - name: Add roles_data.yaml if doing custom roles
   lineinfile:
-    path: /home/{{ uc_user }}/overcloud-deploy.sh
+    path: "{{ deploy_script }}"
     insertafter: openstack overcloud deploy
     line: '  -r {{ stack_templates }}/roles_data.yaml \'
   when: custom_roles.stat.exists 
   become: yes
   become_user: "{{ uc_user }}"
-- name: Add Ironic YAML's to overcloud-deploy.sh (if needed) (OSP Version {{ osp_version }} <= 13)
+- name: Add Ironic YAML's to {{ deploy_script }} (if needed) (OSP Version {{ osp_version }} <= 13)
   blockinfile:
     path: "{{ deploy_script }}"
     block: |2
@@ -808,7 +808,7 @@
   when: deploy_ironic and osp_version <= 13
   become: yes
   become_user: "{{ uc_user }}"
-- name: Add Octavia YAML's to overcloud-deploy.sh (if needed) (OSP Version {{ osp_version }} <= 13)
+- name: Add Octavia YAML's to {{ deploy_script }} (if needed) (OSP Version {{ osp_version }} <= 13)
   blockinfile:
     path: "{{ deploy_script }}"
     block: |2
@@ -967,7 +967,7 @@
   when: include_ceph and ceph_deployment == 'director' and osp_version >= 13 and item.journal != ''
   become: yes
   become_user: "{{ uc_user }}"
-- name: Add ceph configuration to the overcloud-deploy.sh (OSP Version {{ osp_version }} >= 13)
+- name: Add ceph configuration to the {{ deploy_script }} (OSP Version {{ osp_version }} >= 13)
   lineinfile:
     path: "{{ deploy_script }}"
     state: present
