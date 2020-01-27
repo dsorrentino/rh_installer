@@ -113,10 +113,10 @@
       shell: |
         curl http://{{ local_registry_ip.stdout }}:{{ local_registry_port.stdout }}/v2/_catalog | jq .repositories[]
       when: container_registry == "local"
-    - name: Copy the overcloud_images.yaml into the templates directory (OSP Version 13)
+    - name: Copy the overcloud_images.yaml into the templates directory as containers-prepare-parameter.yaml (OSP Version 13)
       copy:
         src: /home/{{ uc_user }}/container_data/overcloud_images.yaml
-        dest: /home/{{ uc_user }}/templates/overcloud_images.yaml
+        dest: /home/{{ uc_user }}/templates/containers-prepare-parameter.yaml
         owner: "{{ uc_user }}"
         group: "{{ uc_user }}"
         mode: 0644

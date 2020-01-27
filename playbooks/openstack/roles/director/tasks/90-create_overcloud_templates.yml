@@ -757,22 +757,6 @@
     mode: u+rwx,g+rx,o+rx
   become: yes
   become_user: "{{ uc_user }}"
-- name: Check if we are need to include the containers file (OSP Version {{ osp_version }} >= 13)
-  stat:
-    path: "{{ stack_templates }}/containers-prepare-parameter.yaml"
-  register: containers_prepare
-  become: yes
-  become_user: "{{ uc_user }}"
-- name: Add containers-prepare-parameter.yaml the overcloud-deploy.sh (OSP Version {{ osp_version }} >= 13)
-  lineinfile:
-    path: "{{ deploy_script }}"
-    state: present
-    line: "  -e {{ stack_templates }}/containers-prepare-parameter.yaml \\"
-    regexp: ".*  -e {{ stack_templates }}/containers-prepare-parameter.yaml \\.*"
-    insertafter: '.*node-info.yaml.*'
-  when: containers_prepare.stat.exists and osp_version >= 13
-  become: yes
-  become_user: "{{ uc_user }}"
 - name: Add VIP Template to the overcloud-deploy.sh (OSP Version {{ osp_version }} >= 13)
   lineinfile:
     path: "{{ deploy_script }}"
@@ -1031,7 +1015,7 @@
     path: /home/{{ uc_user }}/configure_containers.sh
     block: |2
         --tag-from-label {version}-{release} \
-        --output-env-file=/home/{{ uc_user }}/templates/overcloud_images.yaml \
+        --output-env-file=/home/{{ uc_user }}/templates/containers-prepare-parameter.yaml \
         --output-images-file /home/{{ uc_user }}/registry_images.yaml
     marker: "  # {mark} ANSIBLE BLOCK IMAGES"
   when: osp_version >= 12 and osp_version <= 13
@@ -1045,7 +1029,7 @@
         --set ceph_namespace=registry.access.redhat.com/rhceph \
         --set ceph_image={{ ceph_image }} \
     marker: "  # {mark} ANSIBLE BLOCK CEPH"
-    insertbefore: overcloud_images.yaml
+    insertbefore: containers-prepare-parameter.yaml
   when: include_ceph and ceph_deployment == 'director' and osp_version >= 12 and osp_version <= 13
   become: yes
   become_user: "{{ uc_user }}"
@@ -1092,15 +1076,15 @@
   become_user: "{{ uc_user }}"
 - name: Check if we have a container repository YAML
   stat:
-    path: "{{ stack_templates }}/overcloud_images.yaml"
+    path: "{{ stack_templates }}/containers-prepare-parameter.yaml"
   register: container_images
   become: yes
   become_user: "{{ uc_user }}"
-- name: Add overcloud_images.yaml if a container repository exists
+- name: Add containers-prepare-parameter.yaml if a container repository exists
   lineinfile:
     path: "{{ deploy_script }}"
-    insertbefore: log-file overcloud_deployment.log
-    line: '  -e {{ stack_templates }}/overcloud_images.yaml \'
+    insertafter: node-info.yaml
+    line: '  -e {{ stack_templates }}/containers-prepare-parameter.yaml \'
   when: container_images.stat.exists 
   become: yes
   become_user: "{{ uc_user }}"
