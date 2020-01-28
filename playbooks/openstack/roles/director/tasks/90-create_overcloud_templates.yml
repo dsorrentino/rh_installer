@@ -96,7 +96,7 @@
   become_user: "{{ uc_user }}"
 - name: Assemble roles_data.yaml
   assemble:
-    src: home/{{ uc_user }}/templates/roles
+    src: /home/{{ uc_user }}/templates/roles
     dest: "{{ stack_templates }}/templates/roles_data.yaml"
     remote_src: true
   become: yes
