@@ -23,6 +23,7 @@
   become_user: "{{ uc_user }}"
 - name: Create the node-info.yaml for the Overcloud Scale
   copy:
+    force: true
     content: |
       parameter_defaults:
     dest: "{{ stack_templates }}/node-info.yaml"
@@ -34,7 +35,7 @@
     FLAVOR_PARAMETER="{{ item.role_name }}Flavor"
     if [[ ! -z "$(grep 'uses_deprecated_params: True' {{ stack_templates }}/roles/{{ item.role_name }}.yaml)" ]]
     then
-      FLAVOR_PARAMETER=$(grep deprecated_param_flavor: {{ stack_templates }}/roles/{{ item.role_name }}.yaml | awl '{print $NF}' | sed "s/'//g")
+      FLAVOR_PARAMETER=$(grep deprecated_param_flavor: {{ stack_templates }}/roles/{{ item.role_name }}.yaml | awk '{print $NF}' | sed "s/'//g")
     fi
     echo "  ${FLAVOR_PARAMETER}: {{ item.flavor }}" >>{{ stack_templates }}/node-info.yaml
   with_items: "{{ nodes }}"
@@ -81,10 +82,16 @@
   with_items: "{{ find_results.files }}"
   become: yes
   become_user: "{{ uc_user }}"
-- name: Remove existing roles_data.yaml if it exists
+- name: Remove existing roles directory if it exists
   file:
-    path: "{{ stack_templates }}/roles_data.yaml"
+    path: "{{ stack_templates }}/roles/"
     state: absent
+  become: yes
+  become_user: "{{ uc_user }}"
+- name: Create roles directory 
+  file:
+    path: "{{ stack_templates }}/roles/"
+    state: present
   become: yes
   become_user: "{{ uc_user }}"
 - name: Create individual roles templates in {{ stack_templates }}/roles
@@ -92,6 +99,7 @@
     #!/bin/bash
     openstack overcloud roles generate -o {{ stack_templates }}/roles/{{ item.role_name }}.yaml {{ item.role_name }}
   with_items: "{{ nodes }}"
+  when: item.count > 0
   become: yes
   become_user: "{{ uc_user }}"
 - name: Assemble roles_data.yaml
