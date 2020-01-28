@@ -95,10 +95,10 @@
   become: yes
   become_user: "{{ uc_user }}"
 - name: Assemble roles_data.yaml
-  shell: |
-    #!/bin/bash
-    # Could not get the assemble module to work properly, resorting to shell
-    cat /home/{{ uc_user }}/templates/roles/*.yaml >{{ stack_templates }}/templates/roles_data.yaml
+  assemble:
+    remote_src: true
+    src: "{{ stack_templates }}/roles"
+    dest: "{{ stack_templates }}/roles_data.yaml"
   become: yes
   become_user: "{{ uc_user }}"
 - name: Set default count for all roles to 0 (if needed)
