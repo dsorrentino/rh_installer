@@ -120,7 +120,7 @@
         owner: "{{ uc_user }}"
         group: "{{ uc_user }}"
         mode: 0644
-        remote_src: yes
+        remote_src: true
   when: osp_version >= 12 and osp_version <= 13
   become: true
   become_user: "{{ uc_user }}"

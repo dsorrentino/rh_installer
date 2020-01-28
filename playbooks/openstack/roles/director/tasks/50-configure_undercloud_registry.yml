@@ -28,7 +28,7 @@
         owner: "{{ uc_user }}"
         group: "{{ uc_user }}"
         mode: 0644
-        remote_src: yes
+        remote_src: true
     - name: Add registry authentication to containers-prepare-parameter.yaml in templates directory (OSP Version {{ osp_version }} >= 14)
       shell: |
         echo "  ContainerImageRegistryCredentials:" | tee -a /home/{{ uc_user }}/templates/containers-prepare-parameter.yaml
