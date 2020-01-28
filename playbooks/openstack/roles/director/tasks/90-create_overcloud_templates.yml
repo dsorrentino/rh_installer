@@ -91,7 +91,7 @@
 - name: Create roles directory 
   file:
     path: "{{ stack_templates }}/roles/"
-    state: present
+    state: directory
   become: yes
   become_user: "{{ uc_user }}"
 - name: Create individual roles templates in {{ stack_templates }}/roles
