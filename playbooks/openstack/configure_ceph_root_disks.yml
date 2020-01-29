@@ -5,31 +5,31 @@
   vars:
     rhn_installer_local_config: /var/lib/awx/projects/rh_installer.local/config.yml
   tasks:
-- name: Configure root_disk 
-  shell: |
-    #!/bin/bash
-    
-    NODE={{ item.node }}
-    ROOT_DISK={{ item.root_device }}
-    
-    source ~stack/stackrc
-    DISK_INFO=$(openstack baremetal introspection data save ${NODE} 2>/dev/null| jq '.inventory.disks[] | "\(.name) \(.serial) \(.wwn)"' | grep ${ROOT_DISK} | sed 's/"//g')
-    
-    if [[ ! -z "${DISK_INFO}" ]]
-    then
-      SERIAL=$(echo ${DISK_INFO} | awk '{print $2}')
-      WWN=$(echo ${DISK_INFO} | awk '{print $3}')
-      echo "${WWN}"
-      echo "${SERIAL}"
-      if [[ "${WWN}" != "null" ]]
-      then
-        DEVICE=$(echo {\"wwn\":\"$WWN\"})
-      elif [[ "${SERIAL}" != "null" ]]
-      then
-        DEVICE=$(echo {\"serial\":\"$SERIAL\"})
-      fi
-      openstack baremetal node set --property root_device=${DEVICE} ${NODE}
-    fi
-  with_items: "{{ root_device_config }}"
-  become: true
-  become_user: "{{ uc_user }}"
+    - name: Configure root_disk 
+      shell: |
+        #!/bin/bash
+        
+        NODE={{ item.node }}
+        ROOT_DISK={{ item.root_device }}
+        
+        source ~stack/stackrc
+        DISK_INFO=$(openstack baremetal introspection data save ${NODE} 2>/dev/null| jq '.inventory.disks[] | "\(.name) \(.serial) \(.wwn)"' | grep ${ROOT_DISK} | sed 's/"//g')
+        
+        if [[ ! -z "${DISK_INFO}" ]]
+        then
+          SERIAL=$(echo ${DISK_INFO} | awk '{print $2}')
+          WWN=$(echo ${DISK_INFO} | awk '{print $3}')
+          echo "${WWN}"
+          echo "${SERIAL}"
+          if [[ "${WWN}" != "null" ]]
+          then
+            DEVICE=$(echo {\"wwn\":\"$WWN\"})
+          elif [[ "${SERIAL}" != "null" ]]
+          then
+            DEVICE=$(echo {\"serial\":\"$SERIAL\"})
+          fi
+          openstack baremetal node set --property root_device=${DEVICE} ${NODE}
+        fi
+      with_items: "{{ root_device_config }}"
+      become: true
+      become_user: "{{ uc_user }}"
