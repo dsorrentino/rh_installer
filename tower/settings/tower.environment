@@ -46,7 +46,8 @@ TEMPLATE[4,Name]="RHI - Configure root disks for Ceph Nodes"
 TEMPLATE[4,Description]="This will configure the root disks for the nodes. You need to configure the nodes and disks in the extra variables."
 TEMPLATE[4,Playbook]="playbooks/openstack/configure_ceph_root_disks.yml"
 TEMPLATE[4,Credentials]="Director Credential"
-TEMPLATE[4,Variables]=""
+#TEMPLATE[4,Variables]="{\'nodes\': [{\'node\': \'server10\', \'root_device\':\'/dev/sda\'}]}"
+TEMPLATE[4,Variables]="nodes:\n  - node: server10\n    root_device: /dev/sda\n"
 ################################################
 # Credentials
 #
@@ -85,7 +86,7 @@ export INV_OPENSTACK_VAR_FILE=/home/dsorrent/git/rh_installer/tower/settings/inv
 ################################################
 # Hosts
 ################################################
-export HOST_DIRECTOR_NAME=172.16.220.20
+export HOST_DIRECTOR_NAME=172.16.220.25
 ################################################
 # Organization to use
 ################################################

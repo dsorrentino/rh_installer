@@ -10,7 +10,7 @@
     #!/bin/bash
     
     NODE={{ item.node }}
-    ROOT_DISK={{ item.root_disk }}
+    ROOT_DISK={{ item.root_device }}
     
     source ~stack/stackrc
     DISK_INFO=$(openstack baremetal introspection data save ${NODE} 2>/dev/null| jq '.inventory.disks[] | "\(.name) \(.serial) \(.wwn)"' | grep ${ROOT_DISK} | sed 's/"//g')

@@ -272,12 +272,12 @@ function CREATE_TEMPLATE {
 			if [[ ! -z "$VARIABLES" ]]
 			then
 				EXTRA_VARS_FILE=$(mktemp --suffix=create_template.yml)
-				echo "${VARIABLES}" | sed "s/ None/ ''/g" >${EXTRA_VARS_FILE}
+				echo -e "${VARIABLES}" | sed "s/ None/ ''/g" >${EXTRA_VARS_FILE}
 				VARIABLES="--extra_vars @${EXTRA_VARS_FILE} --ask_variables_on_launch true"
 			fi
 			if [[ ! -z "${LIMIT_HOST}" ]]
 			then
-				LIMIT_HOST="--limit ${LIMIT_HOST}"
+				LIMIT_HOST="--limit ${LIMIT_HOST} --ask_limit_on_launch true"
 			fi
 			LOG "file" "${AWX} job_template create --name \"${NAME}\" --project \"${PROJ_ID}\" --playbook \"${PLAYBOOK}\" --description \"${DESCRIPTION}\" --inventory \"${INV_ID}\" ${VARIABLES}"
 			${AWX} job_template create --name "${NAME}" --project "${PROJ_ID}" --playbook "${PLAYBOOK}" --description "${DESCRIPTION}" --inventory "${INV_ID}" ${LIMIT_HOST} ${VARIABLES} >>${STDOUT} 2>>${STDERR}
@@ -294,10 +294,10 @@ function CREATE_TEMPLATE {
 						RESULT=$(( ${RESULT} + $? ))
 					done
 				fi
-			fi
-			if [[ -f ${EXTRA_VARS_FILE} ]]
-			then
-				rm ${EXTRA_VARS_FILE}
+				if [[ -f ${EXTRA_VARS_FILE} ]]
+				then
+					rm ${EXTRA_VARS_FILE}
+				fi
 			fi
 		fi
 	fi
