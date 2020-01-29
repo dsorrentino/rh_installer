@@ -32,7 +32,7 @@
 - name: Configure the flavors for the nodes in node-info.yaml
   shell: |
     #!/bin/bash
-    FLAVOR_PARAMETER="{{ item.role_name }}Flavor"
+    FLAVOR_PARAMETER="Overcloud{{ item.role_name }}Flavor"
     if [[ ! -z "$(grep 'uses_deprecated_params: True' {{ stack_templates }}/roles/{{ item.role_name }}.yaml)" ]]
     then
       FLAVOR_PARAMETER=$(grep deprecated_param_flavor: {{ stack_templates }}/roles/{{ item.role_name }}.yaml | awk '{print $NF}' | sed "s/'//g")
@@ -123,7 +123,7 @@
     if [[ -z "$(openstack flavor list -c Name -f value | grep {{ item.flavor }})" ]]
     then
       openstack flavor create --ram 4096 --disk 40 --vcpus 1 --public {{ item.flavor }}
-      openstack flavor set --property "cpu_arch"="x86_64" --property "capabilities:boot_option"="local" --property "capabilities:profile"="{{ item.flavor }}" {{ item.flavor }}
+      openstack flavor set --property "cpu_arch"="x86_64" --property "capabilities:boot_option"="local" --property "capabilities:profile"="{{ item.flavor }}" --property "resources:CUSTOM_BAREMETAL=1" --property "resources:DISK_GB=0" --property "resources:MEMORY_MB=0" --property "resources:VCPU=0" {{ item.flavor }}
     fi
   with_items: "{{ nodes }}"
   become: yes
@@ -760,102 +760,6 @@
     marker: "  # {mark} ANSIBLE OCTAVIA BLOCK"
     insertbefore: log-file overcloud_deployment.log
   when: deploy_octavia and osp_version <= 13
-  become: yes
-  become_user: "{{ uc_user }}"
-- name: List the baremetal nodes from stored in Ironic
-  shell: |
-    #!/bin/bash
-    source ~/stackrc
-    openstack baremetal node list -c Name -f value >/tmp/overcloud_baremetal.txt
-    if [ ! -s /tmp/overcloud_baremetal.txt ]
-    then
-      rm /tmp/overcloud_baremetal.txt
-    fi
-  become: yes
-  become_user: "{{ uc_user }}"
-- name: Check if baremetal nodes exist in Ironic (file check)
-  stat:
-    path: /tmp/overcloud_baremetal.txt
-  register: baremetal_nodes
-  become: yes
-  become_user: "{{ uc_user }}"
-- name: Check if the nodes have been introspected (ceph)
-  shell: | 
-    #!/bin/bash
-    source ~stack/stackrc
-    WORK_DIRECTORY=$(mktemp -p /tmp -d ansible.check_introspecton.XXXXXX)
-    for NODE in $(openstack baremetal node list -c Name -f value)
-    do
-      INTROSPECTION_STATUS=$(openstack baremetal introspection status -c finished -f value ${NODE} 2>/dev/null)
-      if [[ -z "${INTROSPECTION_STATUS}" || "${INTROSPECTION_STATUS}" != "True" ]]
-      then
-        INTROSPECTION_STATUS="not_introspected"
-      else
-        INTROSPECTION_STATUS="introspected"
-      fi
-      NODE_TYPE="node"
-      if [[ ! -z "$(openstack baremetal node show -c properties -f value ${NODE} | grep {{ ceph_node_capability }})" ]]
-      then
-        NODE_TYPE="CEPH"
-      fi
-      echo "${NODE}:${INTROSPECTION_STATUS}:${NODE_TYPE}" >>${WORK_DIRECTORY}/overcloud_baremetal.txt
-    done
-    CEPH_NODES=$(grep "CEPH" ${WORK_DIRECTORY}/overcloud_baremetal.txt | wc -l)
-    CEPH_INTROSPECTED=$(grep ':introspected:CEPH' ${WORK_DIRECTORY}/overcloud_baremetal.txt | wc -l)
-    if [[ ${CEPH_NODES} -gt 0 && ${CEPH_INTROSPECTED} -gt 0 && ${CEPH_NODES} -eq ${CEPH_INTROSPECTED} ]]
-    then
-      echo "true"
-    else
-      echo "false"
-    fi
-    rm -rf ${WORK_DIRECTORY} 2>/dev/null
-  register: introspection_status
-  when: ceph_configure_root_disk and baremetal_nodes.stat.exists and include_ceph and ceph_deployment == 'director'
-  become: yes
-  become_user: "{{ uc_user }}"
-- name: Configure root_disk (if possible) (ceph)
-  shell: | 
-    #!/bin/bash
-    source ~stack/stackrc
-    WORK_DIRECTORY=$(mktemp -p /tmp -d ansible.configure_ceph_root_disk.XXXXXX)
-    ROOT_DISK={{ ceph_root_disk }}
-    CEPH_NODES=""
-    for NODE in $(openstack baremetal node list -f value -c Name)
-    do
-      if [[ ! -z "$(openstack baremetal node show -c properties -f value ${NODE} | grep {{ ceph_node_capability }})" ]]
-      then
-        CEPH_NODES="${CEPH_NODES} ${NODE}"
-        openstack baremetal introspection data save ${NODE} >${WORK_DIRECTORY}/${NODE}.introspection
-      fi
-    done
-
-    ERROR_COUNT=0
-    for NODE_NAME in ${CEPH_NODES}
-    {
-      if [[ ! -r ${WORK_DIRECTORY}/${NODE_NAME}.introspection ]]
-      then
-        ERROR_COUNT=$(( ${ERROR_COUNT} + 1 ))
-      else
-        DATA_FILE=${WORK_DIRECTORY}/${NODE_NAME}.introspection
-        if [[ -z "$(grep ${ROOT_DISK} ${DATA_FILE})" ]]
-        then
-          ERROR_COUNT=$(( ${ERROR_COUNT} + 1 ))
-        else
-          WWN=$(cat ${DATA_FILE} | jq '.inventory.disks | .[] | select( .name | contains("{{ ceph_root_disk }}"))' | grep '"wwn"' | awk -F: '{print $2}' | sed 's/[", ]//g')
-          SERIAL=$(cat ${DATA_FILE} | jq '.inventory.disks | .[] | select( .name | contains("{{ ceph_root_disk }}"))' | grep '"serial"' | awk -F: '{print $2}' | sed 's/[", ]//g')
-          if [[ "${WWN}" == "null" ]]
-          then
-            openstack baremetal node set --property root_device="{'serial': '${SERIAL}'}" ${NODE_NAME}
-          else
-            openstack baremetal node set --property root_device="{'wwn': '${WWN}'}" ${NODE_NAME}
-          fi
-          openstack baremetal node show -c name -c properties ${NODE_NAME}
-        fi
-      fi
-    }
-    rm -rf ${WORK_DIRECTORY} 2>/dev/null
-    exit ${ERROR_COUNT}
-  when: ceph_configure_root_disk and baremetal_nodes.stat.exists and introspection_status.stdout == 'true' and include_ceph and ceph_deployment == 'director'
   become: yes
   become_user: "{{ uc_user }}"
 - name: Create Ceph storage configuration (if needed) (OSP Version {{ osp_version }} >= 13)
