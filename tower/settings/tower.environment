@@ -46,8 +46,7 @@ TEMPLATE[4,Name]="RHI - Configure root disks for Ceph Nodes"
 TEMPLATE[4,Description]="This will configure the root disks for the nodes. You need to configure the nodes and disks in the extra variables."
 TEMPLATE[4,Playbook]="playbooks/openstack/configure_ceph_root_disks.yml"
 TEMPLATE[4,Credentials]="Director Credential"
-#TEMPLATE[4,Variables]="{\'nodes\': [{\'node\': \'server10\', \'root_device\':\'/dev/sda\'}]}"
-TEMPLATE[4,Variables]="nodes:\n  - node: server10\n    root_device: /dev/sda\n"
+TEMPLATE[4,Variables]="root_device_config:\n  - node: server10\n    root_device: /dev/sda\n"
 ################################################
 # Credentials
 #
