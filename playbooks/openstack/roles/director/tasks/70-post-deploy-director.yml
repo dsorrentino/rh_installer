@@ -60,9 +60,12 @@
   lineinfile:
     path: "/etc/chrony.conf"
     state: present
-    line: "allow {{ director_provisioning_network }}"
-    regexp: "allow {{ director_provisioning_network }}"
+    line: "{{ item }}"
+    regexp: "{{ item }}"
   when: director_local_ip == ntp_server
+  with_items:
+    - "allow {{ director_provisioning_network }}"
+    - "local stratum 10"
   become: yes
 - name: Remove the lines in chrony.conf preventing overcloud nodes from connecting
   lineinfile:
@@ -74,3 +77,21 @@
     - deny
   when: director_local_ip == ntp_server
   become: yes
+- name: Open the port for NTP in running config
+  iptables:
+    chain: INPUT
+    action: insert
+    protocol: udp
+    destination_port: 123
+    jump: ACCEPT
+    cstate: NEW
+    comment: Opening for chronyd
+  become: true
+- name: Add the rule to the iptables configuration file to persist reboots
+  lineinfile:
+    path: /etc/sysconfig/iptables
+    regexp: '^-A INPUT -p udp -m state --state NEW -m udp --dport 123 -j ACCEPT'
+    insertbefore: '-A INPUT -m state --state RELATED,ESTABLISHED'
+    line: '-A INPUT -p udp -m state --state NEW -m udp --dport 123 -j ACCEPT'
+  become: true
+

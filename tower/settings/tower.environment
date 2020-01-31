@@ -28,12 +28,12 @@ export TOWER_URL=https://172.16.225.225
 ################################################
 declare -A TEMPLATE
 TEMPLATE[1,Name]="RHI - Director Node Install and Configure"
-TEMPLATE[1,Description]="Register node to RHN, configure node repositories, configured undercloud.conf and perform yum update"
+TEMPLATE[1,Description]="Configure node repositories, configure undercloud.conf, perform yum update, deploy Director and create default templates. Remember, you still need to update the NIC Configs you're going to use and update ~/templates/network-environment.yaml to use them!"
 TEMPLATE[1,Playbook]="playbooks/openstack/create_director.yml"
 TEMPLATE[1,Credentials]="Director Credential,RH Installer Vault"
 TEMPLATE[1,Variables]=""
 TEMPLATE[2,Name]="RHI - Generate Default Overcloud Templates"
-TEMPLATE[2,Description]="Used to create Overcloud Templates on an already deployed Director/Undercloud"
+TEMPLATE[2,Description]="Used to create Overcloud Templates on an already deployed Director/Undercloud. Remember, you still need to update the NIC Configs you're going to use and update ~/templates/network-environment.yaml to use them!"
 TEMPLATE[2,Playbook]="playbooks/openstack/generate_default_templates.yml"
 TEMPLATE[2,Credentials]="Director Credential"
 TEMPLATE[2,Variables]=""

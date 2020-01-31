@@ -124,7 +124,7 @@ networks:
 # DNS Servers to be used in the Overcloud
 dns_servers: '["172.16.225.254"]'
 # NTP server to be used by the Overcloud.
-ntp_server: 192.168.200.15
+ntp_server: '["192.168.200.15"]'
 # Whether or not to deploy with TLS. This part is still a work in progress. Eventually this project
 # will have a boolean called "Create Self-Signed" or something and generate the overcloud SSL
 # certificates for you.  Right now, this just copies over the necessary templates for you to
