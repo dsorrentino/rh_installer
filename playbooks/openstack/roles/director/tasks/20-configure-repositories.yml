@@ -12,6 +12,10 @@
     name: "{{ item }}"
     state: enabled
   with_items:
+    - rhel-7-server-rpms
+    - rhel-7-server-extras-rpms
+    - rhel-7-server-common-rpms
+    - rhel-7-server-satellite-tools-6.3-rpms
     - rhel-ha-for-rhel-7-server-rpms
     - rhel-7-server-openstack-{{ osp_version }}-rpms
   when: osp_version <= 14 and ansible_facts['cmdline']['BOOT_IMAGE'] is search('vmlinuz-3')
@@ -31,13 +35,15 @@
     - ansible-2.8-for-rhel-8-x86_64-rpms
     - openstack-{{ osp_version }}-for-rhel-8-x86_64-rpms
     - fast-datapath-for-rhel-8-x86_64-rpms
+    - rhel-8-for-x86_64-baseos-rpms
+    - rhel-8-for-x86_64-appstream-rpms
   when: osp_version >= 15 and osp_version != osp_beta_version and ansible_facts['cmdline']['BOOT_IMAGE'] is search('vmlinuz-4')
   become: yes
 - name: Configure Ceph Repositories - Version {{ osp_version }} (RHEL8)
   rhsm_repository:
     name: rhceph-4-tools-for-rhel-8-x86_64-rpms
     state: enabled
-  when: osp_version >= 15 and rhceph4_ga and ansible_facts['cmdline']['BOOT_IMAGE'] is search('vmlinuz-4')
+  when: osp_version >= 15 and ansible_facts['cmdline']['BOOT_IMAGE'] is search('vmlinuz-4')
 - name: Configure Openstack Repositories - Version BETA (OSP Version {{ osp_beta_version }}) (RHEL8)
   rhsm_repository:
     name: "{{ item }}"

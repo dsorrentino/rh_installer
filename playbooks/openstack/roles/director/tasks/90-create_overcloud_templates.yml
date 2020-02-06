@@ -1093,13 +1093,3 @@
     - "{{ deploy_script }}"
   become: yes
   become_user: "{{ uc_user }}"
-- name: Add ceph configuration to support Beta deployment of Ceph (OSP Version {{ osp_version }} == 16)
-  lineinfile:
-    path: "{{ stack_templates }}/ceph-custom-config.yaml"
-    state: present
-    line: "  EnableRhcs4Beta: true"
-    regexp: ".*EnableRhcs4Beta: true.*"
-    insertafter: '^parameter_defaults:.*'
-  when: osp_version == 16 and not rhceph4_ga
-  become: yes
-  become_user: "{{ uc_user }}"

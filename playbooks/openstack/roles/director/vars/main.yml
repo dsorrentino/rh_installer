@@ -2,9 +2,7 @@
 # Red Hat Openstack versions supported by this project
 acceptable_versions: [10, 13, 15, 16]
 # Red Hat Beta version supported by this project
-osp_beta_version: 16
-# Boolean to determine if RH Ceph 4 is GA, if not, a workaround will be used to install ceph-ansible
-rhceph4_ga: false
+osp_beta_version: 17
 # This can either be an IP address or "undercloud". Using "undercloud" will pull
 # the first nameserver from /etc/resolv.conf and use that
 neutron_nameserver: "undercloud"
