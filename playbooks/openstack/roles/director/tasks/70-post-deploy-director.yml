@@ -84,7 +84,7 @@
     protocol: udp
     destination_port: 123
     jump: ACCEPT
-    cstate: NEW
+    ctstate: NEW
     comment: Opening for chronyd
   become: true
 - name: Add the rule to the iptables configuration file to persist reboots
