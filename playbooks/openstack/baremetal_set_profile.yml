@@ -1,0 +1,20 @@
+---
+- name: Configure Profiles for Baremetal nodes in Ironic
+  hosts: all
+  become: yes
+  vars:
+    rhn_installer_local_config: /var/lib/awx/projects/rh_installer.local/config.yml
+  tasks:
+    - name: Configure profiles
+      shell: |
+        #!/bin/bash
+        
+        NODE={{ item.node }}
+        PROFILE={{ item.profile }}
+        
+        source ~stack/stackrc
+        openstack baremetal node set --property capabilities="profile:${PROFILE},boot_option:local" ${NODE}
+
+      with_items: "{{ baremetal_profile_config }}"
+      become: true
+      become_user: "{{ uc_user }}"
